@@ -1,3 +1,4 @@
+// PixelFlow AI - Inspect Service
 import sharp from 'sharp';
 import { Request, Response } from 'express';
 import { fetchImageBuffer } from '../utils/fetch-image.js';
@@ -5,9 +6,9 @@ import { sendSuccess, sendError } from '../utils/response.js';
 
 export async function inspectHandler(req: Request, res: Response): Promise<void> {
   try {
-    const { url, image } = req.body;
+    const { image } = req.body;
     
-    const { buffer: inputBuffer, detectedFormat } = await fetchImageBuffer({ url, image });
+    const { buffer: inputBuffer, detectedFormat } = await fetchImageBuffer({ image });
     const metadata = await sharp(inputBuffer).metadata();
     const sizeBytes = inputBuffer.length;
 
@@ -17,12 +18,12 @@ export async function inspectHandler(req: Request, res: Response): Promise<void>
     try {
       const webpBuffer = await sharp(inputBuffer).webp({ quality: 75 }).toBuffer();
       estimatedWebPSavings = `~${((1 - webpBuffer.length / sizeBytes) * 100).toFixed(0)}%`;
-    } catch { /* format may not support conversion */ }
+    } catch { /* ignore */ }
 
     try {
       const avifBuffer = await sharp(inputBuffer).avif({ quality: 65 }).toBuffer();
       estimatedAVIFSavings = `~${((1 - avifBuffer.length / sizeBytes) * 100).toFixed(0)}%`;
-    } catch { /* format may not support conversion */ }
+    } catch { /* ignore */ }
 
     sendSuccess(res, {
       format: metadata.format || detectedFormat,
