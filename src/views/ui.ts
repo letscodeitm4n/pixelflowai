@@ -3,7 +3,7 @@ export const PLAYGROUND_HTML = `<!DOCTYPE html>
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>PixelFlow AI — Interactive API Playground</title>
+  <title>PixelFlow AI — High-Speed Image Processing API</title>
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;500;600;700;800&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet">
@@ -69,13 +69,13 @@ export const PLAYGROUND_HTML = `<!DOCTYPE html>
     }
 
     .badge {
-      background: rgba(99, 102, 241, 0.15);
-      color: #818cf8;
-      border: 1px solid rgba(99, 102, 241, 0.3);
-      padding: 4px 10px;
+      background: rgba(16, 185, 129, 0.15);
+      color: #34d399;
+      border: 1px solid rgba(16, 185, 129, 0.3);
+      padding: 4px 12px;
       border-radius: 20px;
       font-size: 12px;
-      font-weight: 600;
+      font-weight: 700;
       letter-spacing: 0.5px;
       text-transform: uppercase;
     }
@@ -131,53 +131,35 @@ export const PLAYGROUND_HTML = `<!DOCTYPE html>
 
     /* Input Section */
     .dropzone {
-      border: 2px dashed rgba(255, 255, 255, 0.15);
-      border-radius: 12px;
-      padding: 30px 20px;
+      border: 2px dashed rgba(255, 255, 255, 0.2);
+      border-radius: 14px;
+      padding: 40px 20px;
       text-align: center;
       cursor: pointer;
       transition: all 0.2s ease;
-      background: rgba(255, 255, 255, 0.02);
-      margin-bottom: 20px;
+      background: rgba(255, 255, 255, 0.03);
+      margin-bottom: 24px;
     }
 
     .dropzone:hover, .dropzone.dragover {
       border-color: var(--accent);
-      background: rgba(99, 102, 241, 0.05);
+      background: rgba(99, 102, 241, 0.08);
+      transform: translateY(-2px);
     }
 
     .dropzone-icon {
-      font-size: 32px;
-      margin-bottom: 8px;
+      font-size: 42px;
+      margin-bottom: 12px;
     }
 
     .dropzone-text {
-      font-size: 14px;
+      font-size: 15px;
       color: var(--text-muted);
     }
 
     .dropzone-text strong {
       color: var(--text);
     }
-
-    .divider {
-      display: flex;
-      align-items: center;
-      text-align: center;
-      color: var(--text-muted);
-      font-size: 12px;
-      margin: 20px 0;
-      text-transform: uppercase;
-      letter-spacing: 1px;
-    }
-
-    .divider::before, .divider::after {
-      content: '';
-      flex: 1;
-      border-bottom: 1px solid var(--card-border);
-    }
-    .divider::before { margin-right: 12px; }
-    .divider::after { margin-left: 12px; }
 
     .input-group {
       margin-bottom: 20px;
@@ -211,28 +193,26 @@ export const PLAYGROUND_HTML = `<!DOCTYPE html>
     /* Tabs */
     .tabs {
       display: flex;
-      gap: 6px;
+      gap: 8px;
       background: rgba(0,0,0,0.3);
-      padding: 4px;
+      padding: 6px;
       border-radius: 12px;
       margin-bottom: 24px;
-      overflow-x: auto;
     }
 
     .tab {
       flex: 1;
-      padding: 10px 12px;
+      padding: 12px;
       text-align: center;
       border: none;
       background: transparent;
       color: var(--text-muted);
       font-family: inherit;
-      font-size: 13px;
-      font-weight: 600;
+      font-size: 14px;
+      font-weight: 700;
       border-radius: 8px;
       cursor: pointer;
       transition: all 0.2s;
-      white-space: nowrap;
     }
 
     .tab.active {
@@ -257,14 +237,14 @@ export const PLAYGROUND_HTML = `<!DOCTYPE html>
 
     .btn {
       width: 100%;
-      padding: 14px;
+      padding: 16px;
       background: var(--accent-gradient);
       border: none;
-      border-radius: 10px;
+      border-radius: 12px;
       color: white;
       font-family: inherit;
       font-weight: 700;
-      font-size: 15px;
+      font-size: 16px;
       cursor: pointer;
       box-shadow: 0 4px 20px var(--accent-glow);
       transition: transform 0.1s, opacity 0.2s;
@@ -278,15 +258,15 @@ export const PLAYGROUND_HTML = `<!DOCTYPE html>
     /* Output Section */
     .preview-box {
       width: 100%;
-      height: 280px;
+      height: 320px;
       background: rgba(0,0,0,0.4);
       border: 1px solid var(--card-border);
-      border-radius: 12px;
+      border-radius: 14px;
       display: grid;
       place-items: center;
       overflow: hidden;
       position: relative;
-      margin-bottom: 20px;
+      margin-bottom: 24px;
     }
 
     .preview-box img {
@@ -304,13 +284,13 @@ export const PLAYGROUND_HTML = `<!DOCTYPE html>
       display: grid;
       grid-template-columns: repeat(3, 1fr);
       gap: 12px;
-      margin-bottom: 20px;
+      margin-bottom: 24px;
     }
 
     .stat-card {
       background: rgba(0,0,0,0.25);
       border: 1px solid var(--card-border);
-      padding: 12px;
+      padding: 14px;
       border-radius: 10px;
       text-align: center;
     }
@@ -330,12 +310,12 @@ export const PLAYGROUND_HTML = `<!DOCTYPE html>
     .json-output {
       background: rgba(0,0,0,0.5);
       border: 1px solid var(--card-border);
-      padding: 14px;
+      padding: 16px;
       border-radius: 10px;
       font-family: 'JetBrains Mono', monospace;
       font-size: 12px;
       color: #a7f3d0;
-      max-height: 200px;
+      max-height: 180px;
       overflow-y: auto;
       white-space: pre-wrap;
     }
@@ -361,41 +341,32 @@ export const PLAYGROUND_HTML = `<!DOCTYPE html>
       <div>
         <div class="logo-text">PixelFlow AI</div>
       </div>
-      <span class="badge">A2MCP API</span>
+      <span class="badge">LIMITED TIME FREE PROMO 🎉</span>
     </div>
     <div class="status-pill">
-      <span class="dot"></span> Server Live (X Layer eip155:196)
+      <span class="dot"></span> Server Live
     </div>
   </header>
 
   <main>
     <!-- Left Column: Input Controls -->
     <div class="card">
-      <div class="card-title">📷 Select Input Image</div>
+      <div class="card-title">📁 Upload Image</div>
 
       <!-- Drag and drop zone -->
       <div class="dropzone" id="dropzone">
-        <div class="dropzone-icon">📁</div>
-        <div class="dropzone-text"><strong>Click to upload</strong> or drag & drop image</div>
+        <div class="dropzone-icon">📥</div>
+        <div class="dropzone-text"><strong>Click to select image</strong> or drag & drop file</div>
         <input type="file" id="fileInput" accept="image/*" style="display:none">
       </div>
 
-      <div class="divider">OR</div>
-
-      <div class="input-group">
-        <label class="label">Image URL</label>
-        <input type="text" id="urlInput" value="https://picsum.photos/800/600" placeholder="https://example.com/photo.jpg">
-      </div>
-
-      <div class="card-title" style="margin-top: 30px;">⚙️ Choose Service</div>
+      <div class="card-title">⚙️ Choose Free Service</div>
 
       <!-- Service Tabs -->
       <div class="tabs">
-        <button class="tab active" data-service="compress">Compress ($0.01)</button>
-        <button class="tab" data-service="convert">Convert ($0.01)</button>
-        <button class="tab" data-service="resize">Resize ($0.01)</button>
-        <button class="tab" data-service="strip-exif">EXIF Strip ($0.005)</button>
-        <button class="tab" data-service="inspect">Inspect (Free JSON)</button>
+        <button class="tab active" data-service="compress">Compress (FREE)</button>
+        <button class="tab" data-service="convert">Convert (FREE)</button>
+        <button class="tab" data-service="resize">Resize (FREE)</button>
       </div>
 
       <!-- Service Option Panels -->
@@ -449,15 +420,7 @@ export const PLAYGROUND_HTML = `<!DOCTYPE html>
         </div>
       </div>
 
-      <div id="panel-strip-exif" class="service-panel">
-        <p style="font-size: 13px; color: var(--text-muted);">Delivers actual cleaned image file with EXIF, GPS location, camera serial numbers, and timestamps removed.</p>
-      </div>
-
-      <div id="panel-inspect" class="service-panel">
-        <p style="font-size: 13px; color: var(--text-muted);">Delivers JSON diagnostic analysis (dimensions, format, color space, estimated WebP/AVIF savings).</p>
-      </div>
-
-      <button class="btn" id="runBtn">Run Processing & Deliver Image 🚀</button>
+      <button class="btn" id="runBtn">Process & Deliver Image 🚀</button>
     </div>
 
     <!-- Right Column: Results & Output -->
@@ -465,7 +428,7 @@ export const PLAYGROUND_HTML = `<!DOCTYPE html>
       <div class="card-title">✨ Delivered Output</div>
 
       <div class="preview-box" id="previewBox">
-        <span class="placeholder-text">Delivered output image will appear here</span>
+        <span class="placeholder-text">Upload an image and click Process to see output</span>
       </div>
 
       <div class="stats-grid">
@@ -483,8 +446,8 @@ export const PLAYGROUND_HTML = `<!DOCTYPE html>
         </div>
       </div>
 
-      <div class="card-title" style="font-size: 14px; margin-bottom: 10px;">📄 Delivery Details</div>
-      <div class="json-output" id="jsonOutput">Ready to test. Click "Run Processing & Deliver Image" to test.</div>
+      <div class="card-title" style="font-size: 14px; margin-bottom: 10px;">📄 Delivery Status</div>
+      <div class="json-output" id="jsonOutput">Select an image to start free processing.</div>
     </div>
   </main>
 
@@ -494,7 +457,6 @@ export const PLAYGROUND_HTML = `<!DOCTYPE html>
 
     const dropzone = document.getElementById('dropzone');
     const fileInput = document.getElementById('fileInput');
-    const urlInput = document.getElementById('urlInput');
 
     dropzone.addEventListener('click', () => fileInput.click());
     
@@ -520,7 +482,6 @@ export const PLAYGROUND_HTML = `<!DOCTYPE html>
       reader.onload = (e) => {
         loadedBase64 = e.target.result;
         dropzone.querySelector('.dropzone-text').innerHTML = \`<strong>Loaded:</strong> \${file.name} (\${(file.size / 1024).toFixed(1)} KB)\`;
-        urlInput.value = '';
       };
       reader.readAsDataURL(file);
     }
@@ -548,17 +509,19 @@ export const PLAYGROUND_HTML = `<!DOCTYPE html>
       const statType = document.getElementById('statType');
       const statSpeed = document.getElementById('statSpeed');
 
+      if (!loadedBase64) {
+        alert('Please upload an image first!');
+        return;
+      }
+
       runBtn.disabled = true;
       runBtn.innerHTML = '<div class="spinner"></div>';
 
       const startTime = performance.now();
 
-      let payload = {};
-      if (loadedBase64 && !urlInput.value) {
-        payload.image = loadedBase64;
-      } else {
-        payload.url = urlInput.value || 'https://picsum.photos/800/600';
-      }
+      let payload = {
+        image: loadedBase64
+      };
 
       if (activeService === 'compress') {
         payload.format = document.getElementById('compressFormat').value;
@@ -585,26 +548,21 @@ export const PLAYGROUND_HTML = `<!DOCTYPE html>
         const contentType = res.headers.get('content-type') || '';
         statType.textContent = contentType.split(';')[0];
 
-        if (activeService === 'inspect' || contentType.includes('application/json')) {
-          const data = await res.json();
-          jsonOutput.textContent = JSON.stringify(data, null, 2);
-          if (data.sizeBytes) statSize.textContent = formatBytes(data.sizeBytes);
-          if (data.image) {
-            previewBox.innerHTML = \`<img src="\${data.image}" alt="Processed Image">\`;
-          }
-        } else {
-          // Raw Image File delivered directly!
+        if (res.ok) {
           const blob = await res.blob();
           const imageUrl = URL.createObjectURL(blob);
           previewBox.innerHTML = \`<img src="\${imageUrl}" alt="Delivered Image File">\`;
           statSize.textContent = formatBytes(blob.size);
-          jsonOutput.textContent = \`✅ RAW IMAGE FILE DELIVERED DIRECTLY TO BUYER!\n\nHTTP Status: \${res.status} OK\nContent-Type: \${contentType}\nContent-Length: \${blob.size} bytes\nFilename: \${res.headers.get('content-disposition') || 'pixelflow-output'}\`;
+          jsonOutput.textContent = \`✅ RAW IMAGE FILE DELIVERED DIRECTLY!\n\nHTTP Status: \${res.status} OK\nContent-Type: \${contentType}\nDelivered Size: \${formatBytes(blob.size)}\`;
+        } else {
+          const errorData = await res.json();
+          jsonOutput.textContent = \`Error: \${errorData.error || 'Processing failed'}\`;
         }
       } catch (err) {
         jsonOutput.textContent = \`Network error: \${err.message}\`;
       } finally {
         runBtn.disabled = false;
-        runBtn.textContent = 'Run Processing & Deliver Image 🚀';
+        runBtn.textContent = 'Process & Deliver Image 🚀';
       }
     });
 
