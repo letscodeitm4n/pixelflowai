@@ -403,8 +403,9 @@ export const PLAYGROUND_HTML = `<!DOCTYPE html>
         <div class="input-group">
           <label class="label">Output Image Format</label>
           <select id="compressFormat">
-            <option value="webp">WebP (Recommended)</option>
-            <option value="avif">AVIF (Ultra High Compression)</option>
+            <option value="auto" selected>Original Format (PNG stays PNG, JPG stays JPG)</option>
+            <option value="webp">WebP (High Compression)</option>
+            <option value="avif">AVIF (Ultra Compression)</option>
           </select>
         </div>
         <div class="input-group">
