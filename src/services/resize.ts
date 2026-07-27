@@ -1,7 +1,7 @@
 import sharp from 'sharp';
 import { Request, Response } from 'express';
-import { fetchImageBuffer, ApiError } from '../utils/fetch-image';
-import { sendSuccess, sendError, bufferToBase64 } from '../utils/response';
+import { fetchImageBuffer, ApiError } from '../utils/fetch-image.js';
+import { sendSuccess, sendError, bufferToBase64 } from '../utils/response.js';
 
 export async function resizeHandler(req: Request, res: Response): Promise<void> {
   try {
