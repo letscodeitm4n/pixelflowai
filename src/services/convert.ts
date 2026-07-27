@@ -1,7 +1,7 @@
 import sharp from 'sharp';
 import { Request, Response } from 'express';
 import { fetchImageBuffer, ApiError } from '../utils/fetch-image.js';
-import { sendSuccess, sendError, bufferToBase64 } from '../utils/response.js';
+import { sendError, sendImageResult } from '../utils/response.js';
 
 type OutputFormat = 'png' | 'jpg' | 'webp' | 'avif';
 
@@ -31,12 +31,11 @@ export async function convertHandler(req: Request, res: Response): Promise<void>
 
     const outputBuffer = await pipeline.toBuffer();
 
-    sendSuccess(res, {
+    sendImageResult(req, res, outputBuffer, outputFormat, {
       originalFormat: detectedFormat,
       outputFormat,
       originalSize: inputBuffer.length,
       convertedSize: outputBuffer.length,
-      image: bufferToBase64(outputBuffer, outputFormat),
     });
   } catch (error) {
     sendError(res, error);
