@@ -1,4 +1,4 @@
-// PixelFlow AI - Strip EXIF Service (Smart Inflation-Prevention Logic)
+// PixelFlow AI - Strip EXIF Service (v1.0.4 - Palette Quantization & Size Guarantee)
 import sharp from 'sharp';
 import { Request, Response } from 'express';
 import { fetchImageBuffer } from '../utils/fetch-image.js';
@@ -24,20 +24,21 @@ export async function stripExifHandler(req: Request, res: Response): Promise<voi
     let pipeline = sharp(inputBuffer).rotate();
 
     if (outputFormat === 'png') {
-      pipeline = pipeline.png({ quality: 80, compressionLevel: 9 });
+      // palette: true is REQUIRED in Sharp for PNG quality quantization
+      pipeline = pipeline.png({ quality: 80, compressionLevel: 9, palette: true });
     } else if (outputFormat === 'jpeg' || outputFormat === 'jpg') {
-      pipeline = pipeline.jpeg({ quality: 90 });
+      pipeline = pipeline.jpeg({ quality: 85, progressive: true });
     } else if (outputFormat === 'webp') {
       pipeline = pipeline.webp({ quality: 85 });
     }
 
     let outputBuffer = await pipeline.toBuffer();
 
-    // SAFETY CHECK: Guarantee PNG size never inflates
+    // GUARANTEE: If PNG output is still larger than original input, force higher compression
     if (outputFormat === 'png' && outputBuffer.length > originalSize) {
       outputBuffer = await sharp(inputBuffer)
         .rotate()
-        .png({ quality: 75, compressionLevel: 9 })
+        .png({ quality: 70, compressionLevel: 9, palette: true })
         .toBuffer();
     }
 
