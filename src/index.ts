@@ -43,62 +43,126 @@ setInterval(() => {
   }
 }, 5 * 60 * 1000);
 
-// ─── Free Service Endpoints ───────────────────────────────────────
-app.post('/v1/compress', compressHandler);
-app.post('/v1/convert', convertHandler);
-app.post('/v1/resize', resizeHandler);
+// ─── OKX Payment Middleware (x402 Protocol) ───────────────────────
+const hasPaymentCredentials =
+  process.env.OKX_API_KEY &&
+  process.env.OKX_SECRET_KEY &&
+  process.env.OKX_PASSPHRASE &&
+  process.env.PAY_TO_ADDRESS;
 
-// Interactive Playground UI at GET /test
-app.get('/test', (_req, res) => {
-  res.setHeader('Content-Type', 'text/html');
-  res.send(PLAYGROUND_HTML);
-});
+if (hasPaymentCredentials) {
+  Promise.all([
+    import('@okxweb3/x402-express'),
+    import('@okxweb3/x402-core'),
+    import('@okxweb3/x402-evm/exact/server'),
+  ])
+    .then(([{ paymentMiddleware, x402ResourceServer }, { OKXFacilitatorClient }, { ExactEvmScheme }]) => {
+      const facilitatorClient = new OKXFacilitatorClient({
+        apiKey: process.env.OKX_API_KEY!,
+        secretKey: process.env.OKX_SECRET_KEY!,
+        passphrase: process.env.OKX_PASSPHRASE!,
+      });
 
-// Health check
-app.get('/health', (_req, res) => {
-  res.json({
-    status: 'healthy',
-    service: 'PixelFlow AI',
-    version: '1.1.0',
-    mode: 'FREE',
-    playground: '/test',
-    services: Object.values(SERVICES).map((s) => ({
-      name: s.name,
-      endpoint: s.endpoint,
-      price: s.price,
-    })),
-    timestamp: new Date().toISOString(),
+      const resourceServer = new x402ResourceServer(facilitatorClient);
+      resourceServer.register(CONFIG.network, new ExactEvmScheme());
+
+      const PAY_TO = process.env.PAY_TO_ADDRESS!;
+
+      app.use(
+        paymentMiddleware(
+          {
+            [`POST ${SERVICES.compress.endpoint}`]: {
+              accepts: [{ scheme: 'exact', network: CONFIG.network, asset: CONFIG.asset, payTo: PAY_TO, price: SERVICES.compress.price }],
+              description: SERVICES.compress.description,
+              mimeType: SERVICES.compress.mimeType,
+            },
+            [`POST ${SERVICES.convert.endpoint}`]: {
+              accepts: [{ scheme: 'exact', network: CONFIG.network, asset: CONFIG.asset, payTo: PAY_TO, price: SERVICES.convert.price }],
+              description: SERVICES.convert.description,
+              mimeType: SERVICES.convert.mimeType,
+            },
+            [`POST ${SERVICES.resize.endpoint}`]: {
+              accepts: [{ scheme: 'exact', network: CONFIG.network, asset: CONFIG.asset, payTo: PAY_TO, price: SERVICES.resize.price }],
+              description: SERVICES.resize.description,
+              mimeType: SERVICES.resize.mimeType,
+            },
+          },
+          resourceServer,
+        ),
+      );
+
+      console.log('✅ OKX x402 Payment Middleware activated for X Layer (eip155:196) with USDT0');
+      registerRoutes();
+    })
+    .catch((err) => {
+      console.error('⚠️ Failed to load OKX Payment SDK:', err.message);
+      registerRoutes();
+    });
+} else {
+  console.log('📦 Open access mode active until OKX credentials set');
+  registerRoutes();
+}
+
+function registerRoutes(): void {
+  // Service Endpoints
+  app.post('/v1/compress', compressHandler);
+  app.post('/v1/convert', convertHandler);
+  app.post('/v1/resize', resizeHandler);
+
+  // Interactive Playground UI at GET /test
+  app.get('/test', (_req, res) => {
+    res.setHeader('Content-Type', 'text/html');
+    res.send(PLAYGROUND_HTML);
   });
-});
 
-// Clean JSON API Homepage for AI Agents & OKX.AI Crawlers
-app.get('/', (_req, res) => {
-  res.json({
-    name: 'PixelFlow AI',
-    tagline: 'High-speed image optimization, format conversion, and resizing API for AI agents.',
-    version: '1.1.0',
-    mode: 'FREE',
-    playground: '/test',
-    health: '/health',
-    services: Object.values(SERVICES).map((s) => ({
-      name: s.name,
-      endpoint: s.endpoint,
-      method: s.method,
-      price: s.price,
-      description: s.description,
-    })),
+  // Health check
+  app.get('/health', (_req, res) => {
+    res.json({
+      status: 'healthy',
+      service: 'PixelFlow',
+      version: '1.2.0',
+      network: CONFIG.network,
+      asset: 'USDT0',
+      playground: '/test',
+      services: Object.values(SERVICES).map((s) => ({
+        name: s.name,
+        endpoint: s.endpoint,
+        price: s.price,
+      })),
+      timestamp: new Date().toISOString(),
+    });
   });
-});
 
-app.use((_req, res) => {
-  res.status(404).json({ success: false, error: 'Endpoint not found' });
-});
+  // Clean JSON API Homepage for AI Agents & OKX.AI Crawlers
+  app.get('/', (_req, res) => {
+    res.json({
+      name: 'PixelFlow',
+      tagline: 'High-speed image optimization, format conversion, and resizing API for AI agents.',
+      version: '1.2.0',
+      network: CONFIG.network,
+      asset: 'USDT0 (0x779ded0c9e1022225f8e0630b35a9b54be713736)',
+      playground: '/test',
+      health: '/health',
+      services: Object.values(SERVICES).map((s) => ({
+        name: s.name,
+        endpoint: s.endpoint,
+        method: s.method,
+        price: s.price,
+        description: s.description,
+      })),
+    });
+  });
 
-app.use((err: Error, _req: express.Request, res: express.Response, _next: express.NextFunction) => {
-  console.error('Unhandled error:', err);
-  res.status(500).json({ success: false, error: 'Internal server error' });
-});
+  app.use((_req, res) => {
+    res.status(404).json({ success: false, error: 'Endpoint not found' });
+  });
 
-app.listen(CONFIG.port, '0.0.0.0', () => {
-  console.log(`\n🚀 PixelFlow AI running on 0.0.0.0:${CONFIG.port} (FREE MODE)`);
-});
+  app.use((err: Error, _req: express.Request, res: express.Response, _next: express.NextFunction) => {
+    console.error('Unhandled error:', err);
+    res.status(500).json({ success: false, error: 'Internal server error' });
+  });
+
+  app.listen(CONFIG.port, '0.0.0.0', () => {
+    console.log(`\n🚀 PixelFlow running on 0.0.0.0:${CONFIG.port}`);
+  });
+}
