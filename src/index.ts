@@ -71,7 +71,7 @@ function enforceX402Payment(price: string, description: string, endpoint: string
             network: CONFIG.network,
             asset: CONFIG.asset,
             payTo: PAY_TO,
-            price: price,
+            amount: '10000', // 0.01 USDT in atomic units (6 decimals)
           },
         ],
       };
