@@ -68,28 +68,25 @@ if (hasPaymentCredentials) {
 
       const PAY_TO = process.env.PAY_TO_ADDRESS!;
 
-      app.use(
-        paymentMiddleware(
-          {
-            [`POST ${SERVICES.compress.endpoint}`]: {
-              accepts: [{ scheme: 'exact', network: CONFIG.network, asset: CONFIG.asset, payTo: PAY_TO, price: SERVICES.compress.price }],
-              description: SERVICES.compress.description,
-              mimeType: SERVICES.compress.mimeType,
-            },
-            [`POST ${SERVICES.convert.endpoint}`]: {
-              accepts: [{ scheme: 'exact', network: CONFIG.network, asset: CONFIG.asset, payTo: PAY_TO, price: SERVICES.convert.price }],
-              description: SERVICES.convert.description,
-              mimeType: SERVICES.convert.mimeType,
-            },
-            [`POST ${SERVICES.resize.endpoint}`]: {
-              accepts: [{ scheme: 'exact', network: CONFIG.network, asset: CONFIG.asset, payTo: PAY_TO, price: SERVICES.resize.price }],
-              description: SERVICES.resize.description,
-              mimeType: SERVICES.resize.mimeType,
-            },
-          },
-          resourceServer,
-        ),
-      );
+      const routesConfig: any = {
+        [`POST ${SERVICES.compress.endpoint}`]: {
+          accepts: [{ scheme: 'exact', network: CONFIG.network, asset: CONFIG.asset, payTo: PAY_TO, price: SERVICES.compress.price }],
+          description: SERVICES.compress.description,
+          mimeType: SERVICES.compress.mimeType,
+        },
+        [`POST ${SERVICES.convert.endpoint}`]: {
+          accepts: [{ scheme: 'exact', network: CONFIG.network, asset: CONFIG.asset, payTo: PAY_TO, price: SERVICES.convert.price }],
+          description: SERVICES.convert.description,
+          mimeType: SERVICES.convert.mimeType,
+        },
+        [`POST ${SERVICES.resize.endpoint}`]: {
+          accepts: [{ scheme: 'exact', network: CONFIG.network, asset: CONFIG.asset, payTo: PAY_TO, price: SERVICES.resize.price }],
+          description: SERVICES.resize.description,
+          mimeType: SERVICES.resize.mimeType,
+        },
+      };
+
+      app.use(paymentMiddleware(routesConfig, resourceServer));
 
       console.log('✅ OKX x402 Payment Middleware activated for X Layer (eip155:196) with USDT0');
       registerRoutes();
@@ -120,7 +117,7 @@ function registerRoutes(): void {
     res.json({
       status: 'healthy',
       service: 'PixelFlow',
-      version: '1.2.1',
+      version: '1.2.4',
       network: CONFIG.network,
       asset: 'USDT0',
       playground: '/test',
@@ -138,7 +135,7 @@ function registerRoutes(): void {
     res.json({
       name: 'PixelFlow',
       tagline: 'High-speed image optimization, format conversion, and resizing API for AI agents.',
-      version: '1.2.1',
+      version: '1.2.4',
       network: CONFIG.network,
       asset: 'USDT0 (0x779ded0c9e1022225f8e0630b35a9b54be713736)',
       playground: '/test',

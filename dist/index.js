@@ -54,7 +54,7 @@ if (hasPaymentCredentials) {
         const resourceServer = new x402ResourceServer(facilitatorClient);
         resourceServer.register(CONFIG.network, new ExactEvmScheme());
         const PAY_TO = process.env.PAY_TO_ADDRESS;
-        app.use(paymentMiddleware({
+        const routesConfig = {
             [`POST ${SERVICES.compress.endpoint}`]: {
                 accepts: [{ scheme: 'exact', network: CONFIG.network, asset: CONFIG.asset, payTo: PAY_TO, price: SERVICES.compress.price }],
                 description: SERVICES.compress.description,
@@ -70,7 +70,8 @@ if (hasPaymentCredentials) {
                 description: SERVICES.resize.description,
                 mimeType: SERVICES.resize.mimeType,
             },
-        }, resourceServer));
+        };
+        app.use(paymentMiddleware(routesConfig, resourceServer));
         console.log('✅ OKX x402 Payment Middleware activated for X Layer (eip155:196) with USDT0');
         registerRoutes();
     })
@@ -98,7 +99,7 @@ function registerRoutes() {
         res.json({
             status: 'healthy',
             service: 'PixelFlow',
-            version: '1.2.1',
+            version: '1.2.4',
             network: CONFIG.network,
             asset: 'USDT0',
             playground: '/test',
@@ -115,7 +116,7 @@ function registerRoutes() {
         res.json({
             name: 'PixelFlow',
             tagline: 'High-speed image optimization, format conversion, and resizing API for AI agents.',
-            version: '1.2.1',
+            version: '1.2.4',
             network: CONFIG.network,
             asset: 'USDT0 (0x779ded0c9e1022225f8e0630b35a9b54be713736)',
             playground: '/test',
