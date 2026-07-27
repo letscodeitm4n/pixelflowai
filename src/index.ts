@@ -10,6 +10,7 @@ import { stripExifHandler } from './services/strip-exif';
 import { inspectHandler } from './services/inspect';
 
 const app = express();
+const port = parseInt(process.env.PORT || '4000', 10);
 
 // Parse JSON bodies (limit 25MB for base64 images)
 app.use(express.json({ limit: '25mb' }));
@@ -152,13 +153,13 @@ app.use((err: Error, _req: express.Request, res: express.Response, _next: expres
   res.status(500).json({ success: false, error: 'Internal server error' });
 });
 
-// Start server
-app.listen(CONFIG.port, () => {
-  console.log(`\n🚀 PixelFlow AI running on port ${CONFIG.port}`);
+// Start server listening on 0.0.0.0 for Docker/Railway
+app.listen(port, '0.0.0.0', () => {
+  console.log(`\n🚀 PixelFlow AI running on 0.0.0.0:${port}`);
   console.log(`\n📋 Available services:`);
   Object.values(SERVICES).forEach((s) => {
     const priceTag = s.price === '$0.00' ? 'FREE' : s.price;
     console.log(`   ${s.method} ${s.endpoint} — ${s.name} (${priceTag})`);
   });
-  console.log(`\n🔗 Health check: http://localhost:${CONFIG.port}/health\n`);
+  console.log(`\n🔗 Health check: http://0.0.0.0:${port}/health\n`);
 });
