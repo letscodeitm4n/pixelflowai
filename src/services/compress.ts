@@ -3,17 +3,11 @@ import { Request, Response } from 'express';
 import { fetchImageBuffer, ApiError } from '../utils/fetch-image.js';
 import { sendError, sendImageResult } from '../utils/response.js';
 
-type OutputFormat = 'webp' | 'avif';
+type OutputFormat = 'auto' | 'png' | 'jpg' | 'jpeg' | 'webp' | 'avif';
 
 export async function compressHandler(req: Request, res: Response): Promise<void> {
   try {
-    const { url, image, quality = 75, format = 'webp' } = req.body;
-    
-    // Validate format
-    const validFormats: OutputFormat[] = ['webp', 'avif'];
-    if (!validFormats.includes(format as OutputFormat)) {
-      throw new ApiError(400, `Invalid format: ${format}. Supported: ${validFormats.join(', ')}`);
-    }
+    const { url, image, quality = 75, format = 'auto' } = req.body;
     
     // Validate quality
     const q = Number(quality);
@@ -21,26 +15,47 @@ export async function compressHandler(req: Request, res: Response): Promise<void
       throw new ApiError(400, 'Quality must be between 1 and 100');
     }
 
-    const { buffer: inputBuffer } = await fetchImageBuffer({ url, image });
+    const { buffer: inputBuffer, detectedFormat } = await fetchImageBuffer({ url, image });
     const originalSize = inputBuffer.length;
+
+    let targetFormat = format;
+    if (!targetFormat || targetFormat === 'auto' || targetFormat === 'original') {
+      targetFormat = detectedFormat || 'png';
+    }
+
+    // Normalize format string
+    let normFormat = targetFormat.toLowerCase();
+    if (normFormat === 'jpeg') normFormat = 'jpg';
 
     let pipeline = sharp(inputBuffer);
     
-    if (format === 'webp') {
-      pipeline = pipeline.webp({ quality: q });
-    } else {
-      pipeline = pipeline.avif({ quality: q });
+    switch (normFormat) {
+      case 'png':
+        pipeline = pipeline.png({ quality: q, compressionLevel: 9 });
+        break;
+      case 'jpg':
+        pipeline = pipeline.jpeg({ quality: q });
+        break;
+      case 'avif':
+        pipeline = pipeline.avif({ quality: q });
+        break;
+      case 'webp':
+      default:
+        normFormat = 'webp';
+        pipeline = pipeline.webp({ quality: q });
+        break;
     }
 
     const outputBuffer = await pipeline.toBuffer();
     const compressedSize = outputBuffer.length;
     const savings = ((1 - compressedSize / originalSize) * 100).toFixed(1);
 
-    sendImageResult(req, res, outputBuffer, format, {
+    sendImageResult(req, res, outputBuffer, normFormat, {
       originalSize,
       compressedSize,
       savings: `${savings}%`,
       quality: q,
+      format: normFormat,
     });
   } catch (error) {
     sendError(res, error);
