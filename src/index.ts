@@ -8,6 +8,7 @@ import { convertHandler } from './services/convert';
 import { resizeHandler } from './services/resize';
 import { stripExifHandler } from './services/strip-exif';
 import { inspectHandler } from './services/inspect';
+import { PLAYGROUND_HTML } from './views/ui';
 
 const app = express();
 const port = parseInt(process.env.PORT || '4000', 10);
@@ -109,7 +110,7 @@ if (hasPaymentCredentials) {
   console.log('📦 No OKX credentials found — running in development mode (free testing enabled)');
 }
 
-// ─── Routes ──────────────────────────────────────────────────────
+// ─── API Routes ──────────────────────────────────────────────────
 app.post('/v1/compress', compressHandler);
 app.post('/v1/convert', convertHandler);
 app.post('/v1/resize', resizeHandler);
@@ -132,14 +133,10 @@ app.get('/health', (_req, res) => {
   });
 });
 
-// Root
+// Interactive Playground UI at root
 app.get('/', (_req, res) => {
-  res.json({
-    name: 'PixelFlow AI',
-    tagline: 'High-speed image optimization, format conversion, and diagnostic API for AI agents.',
-    docs: '/health',
-    version: '1.0.0',
-  });
+  res.setHeader('Content-Type', 'text/html');
+  res.send(PLAYGROUND_HTML);
 });
 
 // 404 handler
