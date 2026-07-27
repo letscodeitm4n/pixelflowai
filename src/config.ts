@@ -20,7 +20,7 @@ export const SERVICES: Record<string, ServiceDefinition> = {
   compress: {
     name: 'Ultra-Compressor',
     description: 'Compress PNG, JPG, WebP, and AVIF images by 70-95% while maintaining visual quality. Returns raw image file.',
-    price: '$0.01',
+    price: '0',
     mimeType: 'image/*',
     endpoint: '/v1/compress',
     method: 'POST',
@@ -28,7 +28,7 @@ export const SERVICES: Record<string, ServiceDefinition> = {
   convert: {
     name: 'Format Converter',
     description: 'Convert images between PNG, JPG, WebP, and AVIF formats with 8-bit palette quantization. Returns raw image file.',
-    price: '$0.01',
+    price: '0',
     mimeType: 'image/*',
     endpoint: '/v1/convert',
     method: 'POST',
@@ -36,7 +36,7 @@ export const SERVICES: Record<string, ServiceDefinition> = {
   resize: {
     name: 'Image Resizer',
     description: 'Resize images to custom width, height, and fit mode (cover, contain, fill). Returns raw image file.',
-    price: '$0.01',
+    price: '0',
     mimeType: 'image/*',
     endpoint: '/v1/resize',
     method: 'POST',
