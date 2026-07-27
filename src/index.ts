@@ -43,21 +43,25 @@ setInterval(() => {
   }
 }, 5 * 60 * 1000);
 
-// ─── Free Limited-Time Promotion Mode ────────────────────────────
-console.log('🎉 Running in FREE Promotion Mode (All 3 Services Unlocked for Free testing)');
-
-// Core 3 Paid/Free Service Endpoints
+// ─── Free Limited-Time Promotion Endpoints ────────────────────────
 app.post('/v1/compress', compressHandler);
 app.post('/v1/convert', convertHandler);
 app.post('/v1/resize', resizeHandler);
+
+// Interactive Playground UI at GET /test
+app.get('/test', (_req, res) => {
+  res.setHeader('Content-Type', 'text/html');
+  res.send(PLAYGROUND_HTML);
+});
 
 // Health check
 app.get('/health', (_req, res) => {
   res.json({
     status: 'healthy',
     service: 'PixelFlow AI',
-    version: '1.0.5',
+    version: '1.0.6',
     mode: 'LIMITED_TIME_FREE',
+    playground: '/test',
     services: Object.values(SERVICES).map((s) => ({
       name: s.name,
       endpoint: s.endpoint,
@@ -67,10 +71,22 @@ app.get('/health', (_req, res) => {
   });
 });
 
-// Interactive Playground UI at GET /
+// Clean JSON API Homepage for AI Agents & OKX.AI Crawlers
 app.get('/', (_req, res) => {
-  res.setHeader('Content-Type', 'text/html');
-  res.send(PLAYGROUND_HTML);
+  res.json({
+    name: 'PixelFlow AI',
+    tagline: 'High-speed image optimization and format conversion API for AI agents.',
+    version: '1.0.6',
+    playground: '/test',
+    health: '/health',
+    services: Object.values(SERVICES).map((s) => ({
+      name: s.name,
+      endpoint: s.endpoint,
+      method: s.method,
+      price: 'FREE (Limited Time)',
+      description: s.description,
+    })),
+  });
 });
 
 app.use((_req, res) => {
@@ -84,9 +100,5 @@ app.use((err: Error, _req: express.Request, res: express.Response, _next: expres
 
 app.listen(CONFIG.port, '0.0.0.0', () => {
   console.log(`\n🚀 PixelFlow AI running on 0.0.0.0:${CONFIG.port}`);
-  console.log(`\n📋 Available Free Services:`);
-  Object.values(SERVICES).forEach((s) => {
-    console.log(`   ${s.method} ${s.endpoint} — ${s.name} (FREE)`);
-  });
-  console.log(`\n🔗 Health check: http://0.0.0.0:${CONFIG.port}/health\n`);
+  console.log(`\n📋 Playground: http://localhost:${CONFIG.port}/test`);
 });
