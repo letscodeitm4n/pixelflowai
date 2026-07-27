@@ -1,5 +1,5 @@
 import { Response } from 'express';
-import { ApiError } from './fetch-image';
+import { ApiError } from './fetch-image.js';
 
 export function sendSuccess(res: Response, data: Record<string, any>): void {
   res.json({
