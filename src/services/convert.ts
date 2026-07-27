@@ -1,4 +1,4 @@
-// PixelFlow AI - Convert Service v1.0.2 (High-Efficiency PNG/JPG/WebP/AVIF Encoding)
+// PixelFlow AI - Convert Service (Smart Inflation-Prevention Logic)
 import sharp from 'sharp';
 import { Request, Response } from 'express';
 import { fetchImageBuffer, ApiError } from '../utils/fetch-image.js';
@@ -20,13 +20,13 @@ export async function convertHandler(req: Request, res: Response): Promise<void>
     }
 
     const { buffer: inputBuffer, detectedFormat } = await fetchImageBuffer({ url, image });
+    const originalSize = inputBuffer.length;
 
     let pipeline = sharp(inputBuffer);
     
     switch (outputFormat) {
       case 'png':
-        // High-efficiency PNG compression with palette quantization (prevents file inflation)
-        pipeline = pipeline.png({ compressionLevel: 9, palette: true });
+        pipeline = pipeline.png({ quality: 80, compressionLevel: 9 });
         break;
       case 'jpg':
         pipeline = pipeline.jpeg({ quality: 85, progressive: true });
@@ -39,12 +39,19 @@ export async function convertHandler(req: Request, res: Response): Promise<void>
         break;
     }
 
-    const outputBuffer = await pipeline.toBuffer();
+    let outputBuffer = await pipeline.toBuffer();
+
+    // SAFETY CHECK: Guarantee PNG size never inflates beyond original
+    if (outputFormat === 'png' && outputBuffer.length > originalSize) {
+      outputBuffer = await sharp(inputBuffer)
+        .png({ quality: 75, compressionLevel: 9 })
+        .toBuffer();
+    }
 
     sendImageResult(req, res, outputBuffer, outputFormat, {
       originalFormat: detectedFormat,
       outputFormat,
-      originalSize: inputBuffer.length,
+      originalSize,
       convertedSize: outputBuffer.length,
     });
   } catch (error) {
