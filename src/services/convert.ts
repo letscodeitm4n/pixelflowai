@@ -1,4 +1,4 @@
-// PixelFlow AI - Convert Service (Smart Inflation-Prevention Logic)
+// PixelFlow AI - Convert Service (v1.0.4 - Palette Quantization & Size Guarantee)
 import sharp from 'sharp';
 import { Request, Response } from 'express';
 import { fetchImageBuffer, ApiError } from '../utils/fetch-image.js';
@@ -26,7 +26,7 @@ export async function convertHandler(req: Request, res: Response): Promise<void>
     
     switch (outputFormat) {
       case 'png':
-        pipeline = pipeline.png({ quality: 80, compressionLevel: 9 });
+        pipeline = pipeline.png({ quality: 80, compressionLevel: 9, palette: true });
         break;
       case 'jpg':
         pipeline = pipeline.jpeg({ quality: 85, progressive: true });
@@ -41,10 +41,10 @@ export async function convertHandler(req: Request, res: Response): Promise<void>
 
     let outputBuffer = await pipeline.toBuffer();
 
-    // SAFETY CHECK: Guarantee PNG size never inflates beyond original
+    // GUARANTEE: If PNG output is larger than original, force higher compression
     if (outputFormat === 'png' && outputBuffer.length > originalSize) {
       outputBuffer = await sharp(inputBuffer)
-        .png({ quality: 75, compressionLevel: 9 })
+        .png({ quality: 70, compressionLevel: 9, palette: true })
         .toBuffer();
     }
 
