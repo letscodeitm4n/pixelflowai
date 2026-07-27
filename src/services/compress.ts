@@ -1,10 +1,8 @@
-// PixelFlow AI - Compress Service v1.0.1 (Format: auto / original format preservation)
+// PixelFlow AI - Compress Service (v1.0.4 - Palette Quantization & Size Guarantee)
 import sharp from 'sharp';
 import { Request, Response } from 'express';
 import { fetchImageBuffer, ApiError } from '../utils/fetch-image.js';
 import { sendError, sendImageResult } from '../utils/response.js';
-
-type OutputFormat = 'auto' | 'png' | 'jpg' | 'jpeg' | 'webp' | 'avif';
 
 export async function compressHandler(req: Request, res: Response): Promise<void> {
   try {
@@ -24,7 +22,6 @@ export async function compressHandler(req: Request, res: Response): Promise<void
       targetFormat = detectedFormat || 'png';
     }
 
-    // Normalize format string
     let normFormat = targetFormat.toLowerCase();
     if (normFormat === 'jpeg') normFormat = 'jpg';
 
@@ -32,7 +29,7 @@ export async function compressHandler(req: Request, res: Response): Promise<void
     
     switch (normFormat) {
       case 'png':
-        pipeline = pipeline.png({ quality: q, compressionLevel: 9 });
+        pipeline = pipeline.png({ quality: q, compressionLevel: 9, palette: true });
         break;
       case 'jpg':
         pipeline = pipeline.jpeg({ quality: q });
@@ -47,7 +44,15 @@ export async function compressHandler(req: Request, res: Response): Promise<void
         break;
     }
 
-    const outputBuffer = await pipeline.toBuffer();
+    let outputBuffer = await pipeline.toBuffer();
+
+    // GUARANTEE: If PNG output is larger than original, force higher compression
+    if (normFormat === 'png' && outputBuffer.length > originalSize) {
+      outputBuffer = await sharp(inputBuffer)
+        .png({ quality: Math.min(q, 65), compressionLevel: 9, palette: true })
+        .toBuffer();
+    }
+
     const compressedSize = outputBuffer.length;
     const savings = ((1 - compressedSize / originalSize) * 100).toFixed(1);
 
