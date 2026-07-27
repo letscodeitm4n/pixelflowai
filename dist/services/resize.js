@@ -1,14 +1,30 @@
 import sharp from 'sharp';
 import { fetchImageBuffer, ApiError } from '../utils/fetch-image.js';
 import { sendError, sendImageResult } from '../utils/response.js';
-const PROBE_SAMPLE_PNG = Buffer.from('iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAYAAAAfFcSJAAAADUlEQVR42mNk+M9QDwADhgGAWjR9awAAAABJRU5ErkJggg==', 'base64');
 export async function resizeHandler(req, res) {
     try {
         const { image, width, height, fit = 'cover' } = req.body || {};
+        // Return clear Usage API Documentation when no image parameter is provided
         if (!image || typeof image !== 'string' || image.trim() === '') {
-            sendImageResult(req, res, PROBE_SAMPLE_PNG, 'png', {
-                status: 'healthy',
-                message: 'PixelFlow Image Resizer Active (0.00 USDT/use)',
+            res.status(200).json({
+                success: true,
+                service: 'PixelFlow Image Resizer',
+                status: 'online',
+                price: '0.01 USDT/use',
+                endpoint: 'POST /v1/resize',
+                description: 'Resize images to custom width and height with cover, contain, fill, inside, and outside fit modes.',
+                parameters: {
+                    image: 'base64 data URI string (required)',
+                    width: 'target width in pixels (1-10000)',
+                    height: 'target height in pixels (1-10000)',
+                    fit: 'cover | contain | fill | inside | outside (default: cover)',
+                },
+                samplePayload: {
+                    image: 'data:image/png;base64,...',
+                    width: 500,
+                    height: 500,
+                    fit: 'cover',
+                },
             });
             return;
         }

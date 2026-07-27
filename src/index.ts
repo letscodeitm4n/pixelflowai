@@ -88,7 +88,7 @@ if (hasPaymentCredentials) {
 
       app.use(paymentMiddleware(routesConfig, resourceServer));
 
-      console.log('✅ OKX x402 Payment Middleware activated for X Layer (eip155:196) with USDT0');
+      console.log('✅ OKX x402 Payment Middleware activated for X Layer (eip155:196) with USDT0 ($0.01 USDT/use)');
       registerRoutes();
     })
     .catch((err) => {
@@ -96,7 +96,7 @@ if (hasPaymentCredentials) {
       registerRoutes();
     });
 } else {
-  console.log('📦 Open access mode active (price: 0 USDT/use)');
+  console.log('📦 Open access mode active ($0.01 USDT/use)');
   registerRoutes();
 }
 
@@ -117,14 +117,14 @@ function registerRoutes(): void {
     res.json({
       status: 'healthy',
       service: 'PixelFlow',
-      version: '1.2.4',
+      version: '1.3.0',
       network: CONFIG.network,
-      asset: 'USDT0',
+      asset: 'USDT0 (0x779ded0c9e1022225f8e0630b35a9b54be713736)',
       playground: '/test',
       services: Object.values(SERVICES).map((s) => ({
         name: s.name,
         endpoint: s.endpoint,
-        price: '0.00 USDT/use',
+        price: s.price + ' USDT/use',
       })),
       timestamp: new Date().toISOString(),
     });
@@ -135,7 +135,7 @@ function registerRoutes(): void {
     res.json({
       name: 'PixelFlow',
       tagline: 'High-speed image optimization, format conversion, and resizing API for AI agents.',
-      version: '1.2.4',
+      version: '1.3.0',
       network: CONFIG.network,
       asset: 'USDT0 (0x779ded0c9e1022225f8e0630b35a9b54be713736)',
       playground: '/test',
@@ -144,7 +144,7 @@ function registerRoutes(): void {
         name: s.name,
         endpoint: s.endpoint,
         method: s.method,
-        price: '0.00 USDT/use',
+        price: s.price + ' USDT/use',
         description: s.description,
       })),
     });

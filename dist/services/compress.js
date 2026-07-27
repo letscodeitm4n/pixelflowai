@@ -1,19 +1,31 @@
 import sharp from 'sharp';
 import { fetchImageBuffer, ApiError } from '../utils/fetch-image.js';
 import { sendError, sendImageResult } from '../utils/response.js';
-const PROBE_SAMPLE_PNG = Buffer.from('iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAYAAAAfFcSJAAAADUlEQVR42mNk+M9QDwADhgGAWjR9awAAAABJRU5ErkJggg==', 'base64');
 export async function compressHandler(req, res) {
     try {
         const { image, quality = 75, format = 'auto' } = req.body || {};
-        // Handle probe request gracefully (ensures 200 OK compliance for onchainos probes)
+        // Return clear Usage API Documentation when no image parameter is provided
         if (!image || typeof image !== 'string' || image.trim() === '') {
-            sendImageResult(req, res, PROBE_SAMPLE_PNG, 'png', {
-                status: 'healthy',
-                message: 'PixelFlow Ultra-Compressor Active (0.00 USDT/use)',
+            res.status(200).json({
+                success: true,
+                service: 'PixelFlow Ultra-Compressor',
+                status: 'online',
+                price: '0.01 USDT/use',
+                endpoint: 'POST /v1/compress',
+                description: 'Compress images by 70-90% via WebP/AVIF conversion.',
+                parameters: {
+                    image: 'base64 data URI string (e.g. "data:image/png;base64,...")',
+                    format: 'webp | avif | png | jpg (default: webp)',
+                    quality: 'number between 1 and 100 (default: 75)',
+                },
+                samplePayload: {
+                    image: 'data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAYAAAAfFcSJAAAADUlEQVR42mNk+M9QDwADhgGAWjR9awAAAABJRU5ErkJggg==',
+                    format: 'webp',
+                    quality: 75,
+                },
             });
             return;
         }
-        // Validate quality
         const q = Number(quality);
         if (isNaN(q) || q < 1 || q > 100) {
             throw new ApiError(400, 'Quality must be between 1 and 100');

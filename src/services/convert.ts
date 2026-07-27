@@ -3,19 +3,27 @@ import { Request, Response } from 'express';
 import { fetchImageBuffer, ApiError } from '../utils/fetch-image.js';
 import { sendError, sendImageResult } from '../utils/response.js';
 
-const PROBE_SAMPLE_PNG = Buffer.from(
-  'iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAYAAAAfFcSJAAAADUlEQVR42mNk+M9QDwADhgGAWjR9awAAAABJRU5ErkJggg==',
-  'base64'
-);
-
 export async function convertHandler(req: Request, res: Response): Promise<void> {
   try {
     const { image, outputFormat = 'png' } = req.body || {};
 
+    // Return clear Usage API Documentation when no image parameter is provided
     if (!image || typeof image !== 'string' || image.trim() === '') {
-      sendImageResult(req, res, PROBE_SAMPLE_PNG, 'png', {
-        status: 'healthy',
-        message: 'PixelFlow Format Converter Active (0.00 USDT/use)',
+      res.status(200).json({
+        success: true,
+        service: 'PixelFlow Format Converter',
+        status: 'online',
+        price: '0.01 USDT/use',
+        endpoint: 'POST /v1/convert',
+        description: 'Convert images between PNG, JPG, WebP, and AVIF formats.',
+        parameters: {
+          image: 'base64 data URI string (e.g. "data:image/jpeg;base64,...")',
+          outputFormat: 'png | jpg | webp | avif (required)',
+        },
+        samplePayload: {
+          image: 'data:image/jpeg;base64,...',
+          outputFormat: 'png',
+        },
       });
       return;
     }
