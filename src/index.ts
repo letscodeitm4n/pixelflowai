@@ -45,8 +45,8 @@ setInterval(() => {
 
 const PAY_TO = process.env.PAY_TO_ADDRESS || '0xae003877641ed159f45296904014ac1616d50f76';
 
-// ─── Strict OKX x402 Payment Middleware ───────────────────────────────
-function enforceX402Payment(price: string, description: string) {
+// ─── Official OKX x402 v2 Payment Middleware ───────────────────────────────
+function enforceX402Payment(price: string, description: string, endpoint: string) {
   return (req: express.Request, res: express.Response, next: express.NextFunction): void => {
     // Empty probes without image parameter return 200 OK Usage API JSON for discovery
     if (!req.body || !req.body.image || typeof req.body.image !== 'string' || req.body.image.trim() === '') {
@@ -57,8 +57,14 @@ function enforceX402Payment(price: string, description: string) {
     const authHeader = req.headers['x-402-authorization'] || req.headers['authorization'] || req.headers['x-payment-proof'];
 
     if (!authHeader) {
-      res.setHeader('WWW-Authenticate', `x402 scheme="exact", network="${CONFIG.network}", asset="${CONFIG.asset}", payTo="${PAY_TO}", price="${price}"`);
-      res.status(402).json({
+      const responsePayload = {
+        x402Version: 2,
+        error: 'Payment required',
+        resource: {
+          url: `https://pixelflowai-production.up.railway.app${endpoint}`,
+          description,
+          mimeType: 'application/json',
+        },
         accepts: [
           {
             scheme: 'exact',
@@ -68,8 +74,11 @@ function enforceX402Payment(price: string, description: string) {
             price: price,
           },
         ],
-        description,
-      });
+      };
+
+      const b64Challenge = Buffer.from(JSON.stringify(responsePayload)).toString('base64');
+      res.setHeader('WWW-Authenticate', `x402 ${b64Challenge}`);
+      res.status(402).json(responsePayload);
       return;
     }
 
@@ -80,9 +89,9 @@ function enforceX402Payment(price: string, description: string) {
 // ─── Routes ──────────────────────────────────────────────────────
 function registerRoutes(): void {
   // Official Production Paid Endpoints (0.01 USDT x402 Enforced)
-  app.post('/v1/compress', enforceX402Payment(SERVICES.compress.price, SERVICES.compress.description), compressHandler);
-  app.post('/v1/convert', enforceX402Payment(SERVICES.convert.price, SERVICES.convert.description), convertHandler);
-  app.post('/v1/resize', enforceX402Payment(SERVICES.resize.price, SERVICES.resize.description), resizeHandler);
+  app.post('/v1/compress', enforceX402Payment(SERVICES.compress.price, SERVICES.compress.description, SERVICES.compress.endpoint), compressHandler);
+  app.post('/v1/convert', enforceX402Payment(SERVICES.convert.price, SERVICES.convert.description, SERVICES.convert.endpoint), convertHandler);
+  app.post('/v1/resize', enforceX402Payment(SERVICES.resize.price, SERVICES.resize.description, SERVICES.resize.endpoint), resizeHandler);
 
   // Demo Video Endpoints (Unprotected Direct Image Optimization for Demo Videos)
   app.post('/v1/test1/compress', compressHandler);
@@ -106,7 +115,7 @@ function registerRoutes(): void {
     res.json({
       status: 'healthy',
       service: 'PixelFlow',
-      version: '1.4.3',
+      version: '1.4.4',
       network: CONFIG.network,
       asset: 'USDT0 (0x779ded0c9e1022225f8e0630b35a9b54be713736)',
       payTo: PAY_TO,
@@ -126,7 +135,7 @@ function registerRoutes(): void {
     res.json({
       name: 'PixelFlow',
       tagline: 'High-speed image optimization, format conversion, and resizing API for AI agents.',
-      version: '1.4.3',
+      version: '1.4.4',
       network: CONFIG.network,
       asset: 'USDT0 (0x779ded0c9e1022225f8e0630b35a9b54be713736)',
       payTo: PAY_TO,
@@ -153,7 +162,7 @@ function registerRoutes(): void {
   });
 
   app.listen(CONFIG.port, '0.0.0.0', () => {
-    console.log(`\n🚀 PixelFlow v1.4.3 running on 0.0.0.0:${CONFIG.port}`);
+    console.log(`\n🚀 PixelFlow v1.4.4 running on 0.0.0.0:${CONFIG.port}`);
   });
 }
 
