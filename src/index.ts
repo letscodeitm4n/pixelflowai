@@ -3,7 +3,7 @@ import { CONFIG, SERVICES } from './config.js';
 import { compressHandler } from './services/compress.js';
 import { convertHandler } from './services/convert.js';
 import { resizeHandler } from './services/resize.js';
-import { PLAYGROUND_HTML } from './views/ui.js';
+import { PLAYGROUND_HTML, PLAYGROUND_TEST1_HTML } from './views/ui.js';
 
 const app = express();
 
@@ -82,12 +82,23 @@ function enforceX402Payment(price: string, description: string) {
 
 // ─── Routes ──────────────────────────────────────────────────────
 function registerRoutes(): void {
-  // Service Endpoints with Strict x402 Payment Challenge ($0.01 USDT)
+  // Official Production Paid Endpoints ($0.01 USDT x402 Enforced)
   app.post('/v1/compress', enforceX402Payment(SERVICES.compress.price, SERVICES.compress.description), compressHandler);
   app.post('/v1/convert', enforceX402Payment(SERVICES.convert.price, SERVICES.convert.description), convertHandler);
   app.post('/v1/resize', enforceX402Payment(SERVICES.resize.price, SERVICES.resize.description), resizeHandler);
 
-  // Interactive Playground UI at GET /test
+  // Demo Video Endpoints (Unprotected Direct Image Optimization for Demo Videos)
+  app.post('/v1/test1/compress', compressHandler);
+  app.post('/v1/test1/convert', convertHandler);
+  app.post('/v1/test1/resize', resizeHandler);
+
+  // Demo Video Playground UI at GET /test1
+  app.get('/test1', (_req, res) => {
+    res.setHeader('Content-Type', 'text/html');
+    res.send(PLAYGROUND_TEST1_HTML);
+  });
+
+  // Official Interactive Playground UI at GET /test
   app.get('/test', (_req, res) => {
     res.setHeader('Content-Type', 'text/html');
     res.send(PLAYGROUND_HTML);
@@ -98,11 +109,12 @@ function registerRoutes(): void {
     res.json({
       status: 'healthy',
       service: 'PixelFlow',
-      version: '1.3.1',
+      version: '1.4.0',
       network: CONFIG.network,
       asset: 'USDT0 (0x779ded0c9e1022225f8e0630b35a9b54be713736)',
       payTo: PAY_TO,
-      playground: '/test',
+      demoPlayground: '/test1',
+      officialPlayground: '/test',
       services: Object.values(SERVICES).map((s) => ({
         name: s.name,
         endpoint: s.endpoint,
@@ -117,11 +129,12 @@ function registerRoutes(): void {
     res.json({
       name: 'PixelFlow',
       tagline: 'High-speed image optimization, format conversion, and resizing API for AI agents.',
-      version: '1.3.1',
+      version: '1.4.0',
       network: CONFIG.network,
       asset: 'USDT0 (0x779ded0c9e1022225f8e0630b35a9b54be713736)',
       payTo: PAY_TO,
-      playground: '/test',
+      demoPlayground: '/test1',
+      officialPlayground: '/test',
       health: '/health',
       services: Object.values(SERVICES).map((s) => ({
         name: s.name,
@@ -143,7 +156,8 @@ function registerRoutes(): void {
   });
 
   app.listen(CONFIG.port, '0.0.0.0', () => {
-    console.log(`\n🚀 PixelFlow v1.3.1 running on 0.0.0.0:${CONFIG.port} with strict x402 payment enforcement ($0.01 USDT/use)`);
+    console.log(`\n🚀 PixelFlow v1.4.0 running on 0.0.0.0:${CONFIG.port}`);
+    console.log(`🎬 Demo Video Playground: http://localhost:${CONFIG.port}/test1`);
   });
 }
 
