@@ -45,21 +45,26 @@ function enforceX402Payment(price, description) {
         // Check for x402 Payment Authorization / Proof header
         const authHeader = req.headers['x-402-authorization'] || req.headers['authorization'] || req.headers['x-payment-proof'];
         if (!authHeader) {
-            res.setHeader('WWW-Authenticate', `x402 scheme="exact", network="${CONFIG.network}", asset="${CONFIG.asset}", payTo="${PAY_TO}", price="${price}"`);
-            res.status(402).json({
-                code: 402,
-                message: 'Payment Required',
-                error: 'x402 payment challenge: 0.01 USDT required on X Layer (eip155:196)',
+            const challengePayload = {
+                version: '1.0',
                 accepts: [
                     {
                         scheme: 'exact',
                         network: CONFIG.network,
                         asset: CONFIG.asset,
                         payTo: PAY_TO,
-                        price: price, // Must be plain numeric string e.g. "0.01"
+                        price: price,
                     },
                 ],
                 description,
+            };
+            const b64Challenge = Buffer.from(JSON.stringify(challengePayload)).toString('base64');
+            res.setHeader('WWW-Authenticate', `x402 ${b64Challenge}`);
+            res.status(402).json({
+                code: 402,
+                message: 'Payment Required',
+                error: 'x402 payment challenge: 0.01 USDT required on X Layer (eip155:196)',
+                ...challengePayload,
             });
             return;
         }
@@ -91,7 +96,7 @@ function registerRoutes() {
         res.json({
             status: 'healthy',
             service: 'PixelFlow',
-            version: '1.4.1',
+            version: '1.4.2',
             network: CONFIG.network,
             asset: 'USDT0 (0x779ded0c9e1022225f8e0630b35a9b54be713736)',
             payTo: PAY_TO,
@@ -110,7 +115,7 @@ function registerRoutes() {
         res.json({
             name: 'PixelFlow',
             tagline: 'High-speed image optimization, format conversion, and resizing API for AI agents.',
-            version: '1.4.1',
+            version: '1.4.2',
             network: CONFIG.network,
             asset: 'USDT0 (0x779ded0c9e1022225f8e0630b35a9b54be713736)',
             payTo: PAY_TO,
@@ -134,7 +139,7 @@ function registerRoutes() {
         res.status(500).json({ success: false, error: 'Internal server error' });
     });
     app.listen(CONFIG.port, '0.0.0.0', () => {
-        console.log(`\n🚀 PixelFlow v1.4.1 running on 0.0.0.0:${CONFIG.port}`);
+        console.log(`\n🚀 PixelFlow v1.4.2 running on 0.0.0.0:${CONFIG.port}`);
     });
 }
 registerRoutes();
