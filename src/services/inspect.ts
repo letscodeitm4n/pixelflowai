@@ -1,7 +1,7 @@
 import sharp from 'sharp';
 import { Request, Response } from 'express';
-import { fetchImageBuffer } from '../utils/fetch-image';
-import { sendSuccess, sendError } from '../utils/response';
+import { fetchImageBuffer } from '../utils/fetch-image.js';
+import { sendSuccess, sendError } from '../utils/response.js';
 
 export async function inspectHandler(req: Request, res: Response): Promise<void> {
   try {
@@ -11,7 +11,6 @@ export async function inspectHandler(req: Request, res: Response): Promise<void>
     const metadata = await sharp(inputBuffer).metadata();
     const sizeBytes = inputBuffer.length;
 
-    // Estimate compression savings by actually compressing a small sample
     let estimatedWebPSavings = 'N/A';
     let estimatedAVIFSavings = 'N/A';
 
