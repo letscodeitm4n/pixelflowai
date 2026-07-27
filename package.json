@@ -1,6 +1,6 @@
 {
   "name": "pixelflow-ai",
-  "version": "1.2.3",
+  "version": "1.2.4",
   "description": "PixelFlow - Multi-tool image processing API for AI agents on OKX.AI",
   "main": "src/index.ts",
   "type": "module",
