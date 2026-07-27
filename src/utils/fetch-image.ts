@@ -1,4 +1,4 @@
-import { CONFIG } from '../config';
+import { CONFIG } from '../config.js';
 
 export interface ImageInput {
   url?: string;
@@ -18,7 +18,6 @@ export async function fetchImageBuffer(input: ImageInput): Promise<{ buffer: Buf
 }
 
 async function fetchFromUrl(url: string): Promise<{ buffer: Buffer; detectedFormat: string }> {
-  // Validate URL
   let parsedUrl: URL;
   try {
     parsedUrl = new URL(url);
@@ -66,7 +65,6 @@ function decodeBase64(input: string): { buffer: Buffer; detectedFormat: string }
   let base64Data = input;
   let detectedFormat = 'unknown';
 
-  // Handle data URI format: data:image/png;base64,xxxxx
   const dataUriMatch = input.match(/^data:image\/([a-zA-Z0-9+]+);base64,/);
   if (dataUriMatch) {
     detectedFormat = dataUriMatch[1];
