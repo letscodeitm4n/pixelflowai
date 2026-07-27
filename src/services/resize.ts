@@ -1,3 +1,4 @@
+// PixelFlow AI - Resize Service (Smart Inflation-Prevention Logic)
 import sharp from 'sharp';
 import { Request, Response } from 'express';
 import { fetchImageBuffer, ApiError } from '../utils/fetch-image.js';
@@ -25,20 +26,33 @@ export async function resizeHandler(req: Request, res: Response): Promise<void> 
     }
 
     const { buffer: inputBuffer } = await fetchImageBuffer({ url, image });
+    const originalSize = inputBuffer.length;
     const metadata = await sharp(inputBuffer).metadata();
 
-    const outputBuffer = await sharp(inputBuffer)
-      .resize(w, h, { fit: fit as keyof sharp.FitEnum })
-      .toBuffer();
+    let resizePipeline = sharp(inputBuffer).resize(w, h, { fit: fit as keyof sharp.FitEnum });
+    const outputFormat = metadata.format || 'png';
+
+    if (outputFormat === 'png') {
+      resizePipeline = resizePipeline.png({ quality: 80, compressionLevel: 9 });
+    }
+
+    let outputBuffer = await resizePipeline.toBuffer();
+
+    // SAFETY CHECK: Guarantee PNG size never inflates
+    if (outputFormat === 'png' && outputBuffer.length > originalSize && (!w || w >= (metadata.width || 0))) {
+      outputBuffer = await sharp(inputBuffer)
+        .resize(w, h, { fit: fit as keyof sharp.FitEnum })
+        .png({ quality: 75, compressionLevel: 9 })
+        .toBuffer();
+    }
 
     const outputMetadata = await sharp(outputBuffer).metadata();
-    const outputFormat = outputMetadata.format || 'png';
 
     sendImageResult(req, res, outputBuffer, outputFormat, {
       originalDimensions: { width: metadata.width, height: metadata.height },
       newDimensions: { width: outputMetadata.width, height: outputMetadata.height },
       fit,
-      originalSize: inputBuffer.length,
+      originalSize,
       resizedSize: outputBuffer.length,
     });
   } catch (error) {
