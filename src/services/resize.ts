@@ -1,7 +1,7 @@
 import sharp from 'sharp';
 import { Request, Response } from 'express';
 import { fetchImageBuffer, ApiError } from '../utils/fetch-image.js';
-import { sendSuccess, sendError, bufferToBase64 } from '../utils/response.js';
+import { sendError, sendImageResult } from '../utils/response.js';
 
 export async function resizeHandler(req: Request, res: Response): Promise<void> {
   try {
@@ -34,13 +34,12 @@ export async function resizeHandler(req: Request, res: Response): Promise<void> 
     const outputMetadata = await sharp(outputBuffer).metadata();
     const outputFormat = outputMetadata.format || 'png';
 
-    sendSuccess(res, {
+    sendImageResult(req, res, outputBuffer, outputFormat, {
       originalDimensions: { width: metadata.width, height: metadata.height },
       newDimensions: { width: outputMetadata.width, height: outputMetadata.height },
       fit,
       originalSize: inputBuffer.length,
       resizedSize: outputBuffer.length,
-      image: bufferToBase64(outputBuffer, outputFormat),
     });
   } catch (error) {
     sendError(res, error);
