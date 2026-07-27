@@ -33,31 +33,33 @@ export function sendImageResult(
   format: string,
   stats: Record<string, any>
 ): void {
-  // Check if caller wants raw binary image file (e.g. ?raw=true or Accept: image/*)
-  const wantsRaw = req.query.raw === 'true' || req.query.format === 'binary';
+  // If client explicitly requests JSON metadata via ?format=json
+  const wantsJson = req.query.format === 'json';
 
-  if (wantsRaw) {
-    const mimeMap: Record<string, string> = {
-      webp: 'image/webp',
-      avif: 'image/avif',
-      png: 'image/png',
-      jpg: 'image/jpeg',
-      jpeg: 'image/jpeg',
-      gif: 'image/gif',
-    };
-    const contentType = mimeMap[format] || `image/${format}`;
-    res.setHeader('Content-Type', contentType);
-    res.setHeader('Content-Length', outputBuffer.length);
-    res.send(outputBuffer);
+  if (wantsJson) {
+    sendSuccess(res, {
+      ...stats,
+      format,
+      image: bufferToBase64(outputBuffer, format),
+    });
     return;
   }
 
-  // Default: Return structured JSON for AI Agents
-  sendSuccess(res, {
-    ...stats,
-    format,
-    image: bufferToBase64(outputBuffer, format),
-  });
+  // DEFAULT PRODUCT BEHAVIOR: Deliver actual raw binary image file directly!
+  const mimeMap: Record<string, string> = {
+    webp: 'image/webp',
+    avif: 'image/avif',
+    png: 'image/png',
+    jpg: 'image/jpeg',
+    jpeg: 'image/jpeg',
+    gif: 'image/gif',
+  };
+
+  const contentType = mimeMap[format] || `image/${format}`;
+  res.setHeader('Content-Type', contentType);
+  res.setHeader('Content-Length', outputBuffer.length);
+  res.setHeader('Content-Disposition', `inline; filename="pixelflow-${Date.now()}.${format}"`);
+  res.send(outputBuffer);
 }
 
 export function bufferToBase64(buffer: Buffer, format: string): string {
