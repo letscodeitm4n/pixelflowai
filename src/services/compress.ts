@@ -1,7 +1,7 @@
 import sharp from 'sharp';
 import { Request, Response } from 'express';
 import { fetchImageBuffer, ApiError } from '../utils/fetch-image.js';
-import { sendSuccess, sendError, bufferToBase64 } from '../utils/response.js';
+import { sendError, sendImageResult } from '../utils/response.js';
 
 type OutputFormat = 'webp' | 'avif';
 
@@ -36,13 +36,11 @@ export async function compressHandler(req: Request, res: Response): Promise<void
     const compressedSize = outputBuffer.length;
     const savings = ((1 - compressedSize / originalSize) * 100).toFixed(1);
 
-    sendSuccess(res, {
+    sendImageResult(req, res, outputBuffer, format, {
       originalSize,
       compressedSize,
       savings: `${savings}%`,
-      format,
       quality: q,
-      image: bufferToBase64(outputBuffer, format),
     });
   } catch (error) {
     sendError(res, error);
