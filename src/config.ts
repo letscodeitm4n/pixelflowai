@@ -1,5 +1,5 @@
 export const CONFIG = {
-  network: 'eip155:196', // X Layer (CAIP-2 format required by OKX)
+  network: 'eip155:196', // X Layer
   port: parseInt(process.env.PORT || '4000', 10),
   maxImageSize: 25 * 1024 * 1024, // 25MB
   rateLimitWindowMs: 60 * 1000, // 1 minute
@@ -19,7 +19,7 @@ export const SERVICES: Record<string, ServiceDefinition> = {
   compress: {
     name: 'Ultra-Compressor',
     description: 'Compress PNG, JPG, WebP, and AVIF images by 70-95% while maintaining visual quality. Returns raw image file.',
-    price: '$0.01',
+    price: 'FREE',
     mimeType: 'image/*',
     endpoint: '/v1/compress',
     method: 'POST',
@@ -27,7 +27,7 @@ export const SERVICES: Record<string, ServiceDefinition> = {
   convert: {
     name: 'Format Converter',
     description: 'Convert images between PNG, JPG, WebP, and AVIF formats with 8-bit palette quantization. Returns raw image file.',
-    price: '$0.01',
+    price: 'FREE',
     mimeType: 'image/*',
     endpoint: '/v1/convert',
     method: 'POST',
@@ -35,7 +35,7 @@ export const SERVICES: Record<string, ServiceDefinition> = {
   resize: {
     name: 'Image Resizer',
     description: 'Resize images to custom width, height, and fit mode (cover, contain, fill). Returns raw image file.',
-    price: '$0.01',
+    price: 'FREE',
     mimeType: 'image/*',
     endpoint: '/v1/resize',
     method: 'POST',
