@@ -1,4 +1,4 @@
-// PixelFlow AI - Compress Service (v1.0.4 - Palette Quantization & Size Guarantee)
+// PixelFlow AI - Compress Service
 import sharp from 'sharp';
 import { Request, Response } from 'express';
 import { fetchImageBuffer, ApiError } from '../utils/fetch-image.js';
@@ -6,7 +6,7 @@ import { sendError, sendImageResult } from '../utils/response.js';
 
 export async function compressHandler(req: Request, res: Response): Promise<void> {
   try {
-    const { url, image, quality = 75, format = 'auto' } = req.body;
+    const { image, quality = 75, format = 'auto' } = req.body;
     
     // Validate quality
     const q = Number(quality);
@@ -14,7 +14,7 @@ export async function compressHandler(req: Request, res: Response): Promise<void
       throw new ApiError(400, 'Quality must be between 1 and 100');
     }
 
-    const { buffer: inputBuffer, detectedFormat } = await fetchImageBuffer({ url, image });
+    const { buffer: inputBuffer, detectedFormat } = await fetchImageBuffer({ image });
     const originalSize = inputBuffer.length;
 
     let targetFormat = format;
@@ -46,7 +46,6 @@ export async function compressHandler(req: Request, res: Response): Promise<void
 
     let outputBuffer = await pipeline.toBuffer();
 
-    // GUARANTEE: If PNG output is larger than original, force higher compression
     if (normFormat === 'png' && outputBuffer.length > originalSize) {
       outputBuffer = await sharp(inputBuffer)
         .png({ quality: Math.min(q, 65), compressionLevel: 9, palette: true })
