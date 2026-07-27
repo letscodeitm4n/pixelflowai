@@ -45,10 +45,10 @@ setInterval(() => {
 
 const PAY_TO = process.env.PAY_TO_ADDRESS || '0xae003877641ed159f45296904014ac1616d50f76';
 
-// ─── Strict x402 Payment Middleware ───────────────────────────────
+// ─── Strict OKX x402 Payment Middleware ───────────────────────────────
 function enforceX402Payment(price: string, description: string) {
   return (req: express.Request, res: express.Response, next: express.NextFunction): void => {
-    // Probes with missing image body return 200 OK Usage API JSON for inspection
+    // Empty probes without image parameter return 200 OK Usage API JSON for discovery
     if (!req.body || !req.body.image || typeof req.body.image !== 'string' || req.body.image.trim() === '') {
       return next();
     }
@@ -68,7 +68,7 @@ function enforceX402Payment(price: string, description: string) {
             network: CONFIG.network,
             asset: CONFIG.asset,
             payTo: PAY_TO,
-            price,
+            price: price, // Must be plain numeric string e.g. "0.01"
           },
         ],
         description,
@@ -82,7 +82,7 @@ function enforceX402Payment(price: string, description: string) {
 
 // ─── Routes ──────────────────────────────────────────────────────
 function registerRoutes(): void {
-  // Official Production Paid Endpoints ($0.01 USDT x402 Enforced)
+  // Official Production Paid Endpoints (0.01 USDT x402 Enforced)
   app.post('/v1/compress', enforceX402Payment(SERVICES.compress.price, SERVICES.compress.description), compressHandler);
   app.post('/v1/convert', enforceX402Payment(SERVICES.convert.price, SERVICES.convert.description), convertHandler);
   app.post('/v1/resize', enforceX402Payment(SERVICES.resize.price, SERVICES.resize.description), resizeHandler);
@@ -109,7 +109,7 @@ function registerRoutes(): void {
     res.json({
       status: 'healthy',
       service: 'PixelFlow',
-      version: '1.4.0',
+      version: '1.4.1',
       network: CONFIG.network,
       asset: 'USDT0 (0x779ded0c9e1022225f8e0630b35a9b54be713736)',
       payTo: PAY_TO,
@@ -129,7 +129,7 @@ function registerRoutes(): void {
     res.json({
       name: 'PixelFlow',
       tagline: 'High-speed image optimization, format conversion, and resizing API for AI agents.',
-      version: '1.4.0',
+      version: '1.4.1',
       network: CONFIG.network,
       asset: 'USDT0 (0x779ded0c9e1022225f8e0630b35a9b54be713736)',
       payTo: PAY_TO,
@@ -156,8 +156,7 @@ function registerRoutes(): void {
   });
 
   app.listen(CONFIG.port, '0.0.0.0', () => {
-    console.log(`\n🚀 PixelFlow v1.4.0 running on 0.0.0.0:${CONFIG.port}`);
-    console.log(`🎬 Demo Video Playground: http://localhost:${CONFIG.port}/test1`);
+    console.log(`\n🚀 PixelFlow v1.4.1 running on 0.0.0.0:${CONFIG.port}`);
   });
 }
 
