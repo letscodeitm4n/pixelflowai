@@ -1,0 +1,48 @@
+import sharp from 'sharp';
+import { Request, Response } from 'express';
+import { fetchImageBuffer, ApiError } from '../utils/fetch-image';
+import { sendSuccess, sendError, bufferToBase64 } from '../utils/response';
+
+export async function resizeHandler(req: Request, res: Response): Promise<void> {
+  try {
+    const { url, image, width, height, fit = 'cover' } = req.body;
+    
+    if (!width && !height) {
+      throw new ApiError(400, 'At least one of "width" or "height" must be provided');
+    }
+
+    const validFits = ['cover', 'contain', 'fill', 'inside', 'outside'] as const;
+    if (!validFits.includes(fit)) {
+      throw new ApiError(400, `Invalid fit: ${fit}. Supported: ${validFits.join(', ')}`);
+    }
+
+    const w = width ? Number(width) : undefined;
+    const h = height ? Number(height) : undefined;
+    
+    if ((w !== undefined && (isNaN(w) || w < 1 || w > 10000)) ||
+        (h !== undefined && (isNaN(h) || h < 1 || h > 10000))) {
+      throw new ApiError(400, 'Width and height must be between 1 and 10000');
+    }
+
+    const { buffer: inputBuffer } = await fetchImageBuffer({ url, image });
+    const metadata = await sharp(inputBuffer).metadata();
+
+    const outputBuffer = await sharp(inputBuffer)
+      .resize(w, h, { fit: fit as keyof sharp.FitEnum })
+      .toBuffer();
+
+    const outputMetadata = await sharp(outputBuffer).metadata();
+    const outputFormat = outputMetadata.format || 'png';
+
+    sendSuccess(res, {
+      originalDimensions: { width: metadata.width, height: metadata.height },
+      newDimensions: { width: outputMetadata.width, height: outputMetadata.height },
+      fit,
+      originalSize: inputBuffer.length,
+      resizedSize: outputBuffer.length,
+      image: bufferToBase64(outputBuffer, outputFormat),
+    });
+  } catch (error) {
+    sendError(res, error);
+  }
+}
