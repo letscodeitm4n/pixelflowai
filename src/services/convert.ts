@@ -1,3 +1,4 @@
+// PixelFlow AI - Convert Service v1.0.2 (High-Efficiency PNG/JPG/WebP/AVIF Encoding)
 import sharp from 'sharp';
 import { Request, Response } from 'express';
 import { fetchImageBuffer, ApiError } from '../utils/fetch-image.js';
@@ -23,10 +24,19 @@ export async function convertHandler(req: Request, res: Response): Promise<void>
     let pipeline = sharp(inputBuffer);
     
     switch (outputFormat) {
-      case 'png':  pipeline = pipeline.png(); break;
-      case 'jpg':  pipeline = pipeline.jpeg({ quality: 90 }); break;
-      case 'webp': pipeline = pipeline.webp({ quality: 85 }); break;
-      case 'avif': pipeline = pipeline.avif({ quality: 80 }); break;
+      case 'png':
+        // High-efficiency PNG compression with palette quantization (prevents file inflation)
+        pipeline = pipeline.png({ compressionLevel: 9, palette: true });
+        break;
+      case 'jpg':
+        pipeline = pipeline.jpeg({ quality: 85, progressive: true });
+        break;
+      case 'webp':
+        pipeline = pipeline.webp({ quality: 80, effort: 5 });
+        break;
+      case 'avif':
+        pipeline = pipeline.avif({ quality: 75, effort: 5 });
+        break;
     }
 
     const outputBuffer = await pipeline.toBuffer();
