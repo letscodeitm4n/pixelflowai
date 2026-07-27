@@ -1,6 +1,7 @@
 import { CONFIG } from '../config.js';
 
 export interface ImageInput {
+  url?: string;
   image?: string; // base64
 }
 
