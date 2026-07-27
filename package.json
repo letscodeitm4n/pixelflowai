@@ -1,0 +1,13 @@
+{
+  "name": "pixelflow-ai",
+  "version": "1.0.0",
+  "description": "PixelFlow AI - Multi-tool image processing API for AI agents on OKX.AI",
+  "main": "dist/index.js",
+  "scripts": {
+    "dev": "tsx watch src/index.ts",
+    "build": "tsc",
+    "start": "node dist/index.js"
+  },
+  "keywords": ["image-processing", "okx", "a2mcp", "x402", "ai-agent"],
+  "license": "MIT"
+}
