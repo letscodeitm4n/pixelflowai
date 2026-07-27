@@ -1,3 +1,4 @@
+// PixelFlow AI - Compress Service v1.0.1 (Format: auto / original format preservation)
 import sharp from 'sharp';
 import { Request, Response } from 'express';
 import { fetchImageBuffer, ApiError } from '../utils/fetch-image.js';
