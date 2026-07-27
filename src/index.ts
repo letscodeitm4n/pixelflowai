@@ -99,7 +99,7 @@ if (hasPaymentCredentials) {
       registerRoutes();
     });
 } else {
-  console.log('📦 Open access mode active until OKX credentials set');
+  console.log('📦 Open access mode active (price: 0 USDT/use)');
   registerRoutes();
 }
 
@@ -120,14 +120,14 @@ function registerRoutes(): void {
     res.json({
       status: 'healthy',
       service: 'PixelFlow',
-      version: '1.2.0',
+      version: '1.2.1',
       network: CONFIG.network,
       asset: 'USDT0',
       playground: '/test',
       services: Object.values(SERVICES).map((s) => ({
         name: s.name,
         endpoint: s.endpoint,
-        price: s.price,
+        price: '0.00 USDT/use',
       })),
       timestamp: new Date().toISOString(),
     });
@@ -138,7 +138,7 @@ function registerRoutes(): void {
     res.json({
       name: 'PixelFlow',
       tagline: 'High-speed image optimization, format conversion, and resizing API for AI agents.',
-      version: '1.2.0',
+      version: '1.2.1',
       network: CONFIG.network,
       asset: 'USDT0 (0x779ded0c9e1022225f8e0630b35a9b54be713736)',
       playground: '/test',
@@ -147,7 +147,7 @@ function registerRoutes(): void {
         name: s.name,
         endpoint: s.endpoint,
         method: s.method,
-        price: s.price,
+        price: '0.00 USDT/use',
         description: s.description,
       })),
     });
