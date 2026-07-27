@@ -1,4 +1,4 @@
-// PixelFlow AI - Convert Service (v1.0.4 - Palette Quantization & Size Guarantee)
+// PixelFlow AI - Convert Service
 import sharp from 'sharp';
 import { Request, Response } from 'express';
 import { fetchImageBuffer, ApiError } from '../utils/fetch-image.js';
@@ -8,7 +8,7 @@ type OutputFormat = 'png' | 'jpg' | 'webp' | 'avif';
 
 export async function convertHandler(req: Request, res: Response): Promise<void> {
   try {
-    const { url, image, outputFormat } = req.body;
+    const { image, outputFormat } = req.body;
     
     if (!outputFormat) {
       throw new ApiError(400, '"outputFormat" is required. Supported: png, jpg, webp, avif');
@@ -19,7 +19,7 @@ export async function convertHandler(req: Request, res: Response): Promise<void>
       throw new ApiError(400, `Invalid outputFormat: ${outputFormat}. Supported: ${validFormats.join(', ')}`);
     }
 
-    const { buffer: inputBuffer, detectedFormat } = await fetchImageBuffer({ url, image });
+    const { buffer: inputBuffer, detectedFormat } = await fetchImageBuffer({ image });
     const originalSize = inputBuffer.length;
 
     let pipeline = sharp(inputBuffer);
@@ -41,7 +41,6 @@ export async function convertHandler(req: Request, res: Response): Promise<void>
 
     let outputBuffer = await pipeline.toBuffer();
 
-    // GUARANTEE: If PNG output is larger than original, force higher compression
     if (outputFormat === 'png' && outputBuffer.length > originalSize) {
       outputBuffer = await sharp(inputBuffer)
         .png({ quality: 70, compressionLevel: 9, palette: true })
