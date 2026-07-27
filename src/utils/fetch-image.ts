@@ -1,8 +1,7 @@
 import { CONFIG } from '../config.js';
 
 export interface ImageInput {
-  url?: string;
-  image?: string; // base64
+  image?: string; // base64 data URI
 }
 
 export async function fetchImageBuffer(input: ImageInput): Promise<{ buffer: Buffer; detectedFormat: string }> {
