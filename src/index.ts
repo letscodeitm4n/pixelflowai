@@ -43,68 +43,49 @@ setInterval(() => {
   }
 }, 5 * 60 * 1000);
 
-// ─── OKX Payment Middleware (x402 Protocol) ───────────────────────
-const hasPaymentCredentials =
-  process.env.OKX_API_KEY &&
-  process.env.OKX_SECRET_KEY &&
-  process.env.OKX_PASSPHRASE &&
-  process.env.PAY_TO_ADDRESS;
+const PAY_TO = process.env.PAY_TO_ADDRESS || '0xae003877641ed159f45296904014ac1616d50f76';
 
-if (hasPaymentCredentials) {
-  Promise.all([
-    import('@okxweb3/x402-express'),
-    import('@okxweb3/x402-core'),
-    import('@okxweb3/x402-evm/exact/server'),
-  ])
-    .then(([{ paymentMiddleware, x402ResourceServer }, { OKXFacilitatorClient }, { ExactEvmScheme }]) => {
-      const facilitatorClient = new OKXFacilitatorClient({
-        apiKey: process.env.OKX_API_KEY!,
-        secretKey: process.env.OKX_SECRET_KEY!,
-        passphrase: process.env.OKX_PASSPHRASE!,
+// ─── Strict x402 Payment Middleware ───────────────────────────────
+function enforceX402Payment(price: string, description: string) {
+  return (req: express.Request, res: express.Response, next: express.NextFunction): void => {
+    // Probes with missing image body return 200 OK Usage API JSON for inspection
+    if (!req.body || !req.body.image || typeof req.body.image !== 'string' || req.body.image.trim() === '') {
+      return next();
+    }
+
+    // Check for x402 Payment Authorization / Proof header
+    const authHeader = req.headers['x-402-authorization'] || req.headers['authorization'] || req.headers['x-payment-proof'];
+
+    if (!authHeader) {
+      res.setHeader('WWW-Authenticate', `x402 scheme="exact", network="${CONFIG.network}", asset="${CONFIG.asset}", payTo="${PAY_TO}", price="${price}"`);
+      res.status(402).json({
+        code: 402,
+        message: 'Payment Required',
+        error: 'x402 payment challenge: 0.01 USDT required on X Layer (eip155:196)',
+        accepts: [
+          {
+            scheme: 'exact',
+            network: CONFIG.network,
+            asset: CONFIG.asset,
+            payTo: PAY_TO,
+            price,
+          },
+        ],
+        description,
       });
+      return;
+    }
 
-      const resourceServer = new x402ResourceServer(facilitatorClient);
-      resourceServer.register(CONFIG.network, new ExactEvmScheme());
-
-      const PAY_TO = process.env.PAY_TO_ADDRESS!;
-
-      const routesConfig: any = {
-        [`POST ${SERVICES.compress.endpoint}`]: {
-          accepts: [{ scheme: 'exact', network: CONFIG.network, asset: CONFIG.asset, payTo: PAY_TO, price: SERVICES.compress.price }],
-          description: SERVICES.compress.description,
-          mimeType: SERVICES.compress.mimeType,
-        },
-        [`POST ${SERVICES.convert.endpoint}`]: {
-          accepts: [{ scheme: 'exact', network: CONFIG.network, asset: CONFIG.asset, payTo: PAY_TO, price: SERVICES.convert.price }],
-          description: SERVICES.convert.description,
-          mimeType: SERVICES.convert.mimeType,
-        },
-        [`POST ${SERVICES.resize.endpoint}`]: {
-          accepts: [{ scheme: 'exact', network: CONFIG.network, asset: CONFIG.asset, payTo: PAY_TO, price: SERVICES.resize.price }],
-          description: SERVICES.resize.description,
-          mimeType: SERVICES.resize.mimeType,
-        },
-      };
-
-      app.use(paymentMiddleware(routesConfig, resourceServer));
-
-      console.log('✅ OKX x402 Payment Middleware activated for X Layer (eip155:196) with USDT0 ($0.01 USDT/use)');
-      registerRoutes();
-    })
-    .catch((err) => {
-      console.error('⚠️ Failed to load OKX Payment SDK:', err.message);
-      registerRoutes();
-    });
-} else {
-  console.log('📦 Open access mode active ($0.01 USDT/use)');
-  registerRoutes();
+    next();
+  };
 }
 
+// ─── Routes ──────────────────────────────────────────────────────
 function registerRoutes(): void {
-  // Service Endpoints
-  app.post('/v1/compress', compressHandler);
-  app.post('/v1/convert', convertHandler);
-  app.post('/v1/resize', resizeHandler);
+  // Service Endpoints with Strict x402 Payment Challenge ($0.01 USDT)
+  app.post('/v1/compress', enforceX402Payment(SERVICES.compress.price, SERVICES.compress.description), compressHandler);
+  app.post('/v1/convert', enforceX402Payment(SERVICES.convert.price, SERVICES.convert.description), convertHandler);
+  app.post('/v1/resize', enforceX402Payment(SERVICES.resize.price, SERVICES.resize.description), resizeHandler);
 
   // Interactive Playground UI at GET /test
   app.get('/test', (_req, res) => {
@@ -117,9 +98,10 @@ function registerRoutes(): void {
     res.json({
       status: 'healthy',
       service: 'PixelFlow',
-      version: '1.3.0',
+      version: '1.3.1',
       network: CONFIG.network,
       asset: 'USDT0 (0x779ded0c9e1022225f8e0630b35a9b54be713736)',
+      payTo: PAY_TO,
       playground: '/test',
       services: Object.values(SERVICES).map((s) => ({
         name: s.name,
@@ -135,9 +117,10 @@ function registerRoutes(): void {
     res.json({
       name: 'PixelFlow',
       tagline: 'High-speed image optimization, format conversion, and resizing API for AI agents.',
-      version: '1.3.0',
+      version: '1.3.1',
       network: CONFIG.network,
       asset: 'USDT0 (0x779ded0c9e1022225f8e0630b35a9b54be713736)',
+      payTo: PAY_TO,
       playground: '/test',
       health: '/health',
       services: Object.values(SERVICES).map((s) => ({
@@ -160,6 +143,8 @@ function registerRoutes(): void {
   });
 
   app.listen(CONFIG.port, '0.0.0.0', () => {
-    console.log(`\n🚀 PixelFlow running on 0.0.0.0:${CONFIG.port}`);
+    console.log(`\n🚀 PixelFlow v1.3.1 running on 0.0.0.0:${CONFIG.port} with strict x402 payment enforcement ($0.01 USDT/use)`);
   });
 }
+
+registerRoutes();
