@@ -1,4 +1,4 @@
-// PixelFlow AI - Strip EXIF Service (v1.0.4 - Palette Quantization & Size Guarantee)
+// PixelFlow AI - Strip EXIF Service
 import sharp from 'sharp';
 import { Request, Response } from 'express';
 import { fetchImageBuffer } from '../utils/fetch-image.js';
@@ -6,9 +6,9 @@ import { sendError, sendImageResult } from '../utils/response.js';
 
 export async function stripExifHandler(req: Request, res: Response): Promise<void> {
   try {
-    const { url, image } = req.body;
+    const { image } = req.body;
     
-    const { buffer: inputBuffer } = await fetchImageBuffer({ url, image });
+    const { buffer: inputBuffer } = await fetchImageBuffer({ image });
     const originalSize = inputBuffer.length;
     
     const metadata = await sharp(inputBuffer).metadata();
@@ -24,7 +24,6 @@ export async function stripExifHandler(req: Request, res: Response): Promise<voi
     let pipeline = sharp(inputBuffer).rotate();
 
     if (outputFormat === 'png') {
-      // palette: true is REQUIRED in Sharp for PNG quality quantization
       pipeline = pipeline.png({ quality: 80, compressionLevel: 9, palette: true });
     } else if (outputFormat === 'jpeg' || outputFormat === 'jpg') {
       pipeline = pipeline.jpeg({ quality: 85, progressive: true });
@@ -34,7 +33,6 @@ export async function stripExifHandler(req: Request, res: Response): Promise<voi
 
     let outputBuffer = await pipeline.toBuffer();
 
-    // GUARANTEE: If PNG output is still larger than original input, force higher compression
     if (outputFormat === 'png' && outputBuffer.length > originalSize) {
       outputBuffer = await sharp(inputBuffer)
         .rotate()
