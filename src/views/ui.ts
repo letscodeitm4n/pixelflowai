@@ -391,21 +391,17 @@ export const PLAYGROUND_HTML = `<!DOCTYPE html>
 
       <!-- Service Tabs -->
       <div class="tabs">
-        <button class="tab active" data-service="inspect">Inspect (Free)</button>
-        <button class="tab" data-service="compress">Compress ($0.01)</button>
+        <button class="tab active" data-service="compress">Compress ($0.01)</button>
         <button class="tab" data-service="convert">Convert ($0.01)</button>
         <button class="tab" data-service="resize">Resize ($0.01)</button>
         <button class="tab" data-service="strip-exif">EXIF Strip ($0.005)</button>
+        <button class="tab" data-service="inspect">Inspect (Free JSON)</button>
       </div>
 
       <!-- Service Option Panels -->
-      <div id="panel-inspect" class="service-panel active">
-        <p style="font-size: 13px; color: var(--text-muted);">Inspects image dimensions, format, color space, and estimates WebP/AVIF file size savings.</p>
-      </div>
-
-      <div id="panel-compress" class="service-panel">
+      <div id="panel-compress" class="service-panel active">
         <div class="input-group">
-          <label class="label">Format</label>
+          <label class="label">Output Image Format</label>
           <select id="compressFormat">
             <option value="webp">WebP (Recommended)</option>
             <option value="avif">AVIF (Ultra High Compression)</option>
@@ -421,7 +417,7 @@ export const PLAYGROUND_HTML = `<!DOCTYPE html>
 
       <div id="panel-convert" class="service-panel">
         <div class="input-group">
-          <label class="label">Target Format</label>
+          <label class="label">Target Output Format</label>
           <select id="convertFormat">
             <option value="webp">WebP</option>
             <option value="png">PNG</option>
@@ -453,28 +449,32 @@ export const PLAYGROUND_HTML = `<!DOCTYPE html>
       </div>
 
       <div id="panel-strip-exif" class="service-panel">
-        <p style="font-size: 13px; color: var(--text-muted);">Removes hidden camera metadata, GPS location, camera serial numbers, and timestamps.</p>
+        <p style="font-size: 13px; color: var(--text-muted);">Delivers actual cleaned image file with EXIF, GPS location, camera serial numbers, and timestamps removed.</p>
       </div>
 
-      <button class="btn" id="runBtn">Run Processing 🚀</button>
+      <div id="panel-inspect" class="service-panel">
+        <p style="font-size: 13px; color: var(--text-muted);">Delivers JSON diagnostic analysis (dimensions, format, color space, estimated WebP/AVIF savings).</p>
+      </div>
+
+      <button class="btn" id="runBtn">Run Processing & Deliver Image 🚀</button>
     </div>
 
     <!-- Right Column: Results & Output -->
     <div class="card">
-      <div class="card-title">✨ Result & Diagnostics</div>
+      <div class="card-title">✨ Delivered Output</div>
 
       <div class="preview-box" id="previewBox">
-        <span class="placeholder-text">Output preview will appear here</span>
+        <span class="placeholder-text">Delivered output image will appear here</span>
       </div>
 
       <div class="stats-grid">
         <div class="stat-card">
           <div class="stat-val" id="statSize">-</div>
-          <div class="stat-label">File Size</div>
+          <div class="stat-label">Delivered Size</div>
         </div>
         <div class="stat-card">
-          <div class="stat-val" id="statDim">-</div>
-          <div class="stat-label">Dimensions</div>
+          <div class="stat-val" id="statType">-</div>
+          <div class="stat-label">Content-Type</div>
         </div>
         <div class="stat-card">
           <div class="stat-val" id="statSpeed">-</div>
@@ -482,16 +482,15 @@ export const PLAYGROUND_HTML = `<!DOCTYPE html>
         </div>
       </div>
 
-      <div class="card-title" style="font-size: 14px; margin-bottom: 10px;">📄 Raw Response JSON</div>
-      <div class="json-output" id="jsonOutput">Ready to test. Click "Run Processing" to test endpoint.</div>
+      <div class="card-title" style="font-size: 14px; margin-bottom: 10px;">📄 Delivery Details</div>
+      <div class="json-output" id="jsonOutput">Ready to test. Click "Run Processing & Deliver Image" to test.</div>
     </div>
   </main>
 
   <script>
-    let activeService = 'inspect';
+    let activeService = 'compress';
     let loadedBase64 = null;
 
-    // Dropzone & File Input
     const dropzone = document.getElementById('dropzone');
     const fileInput = document.getElementById('fileInput');
     const urlInput = document.getElementById('urlInput');
@@ -520,17 +519,15 @@ export const PLAYGROUND_HTML = `<!DOCTYPE html>
       reader.onload = (e) => {
         loadedBase64 = e.target.result;
         dropzone.querySelector('.dropzone-text').innerHTML = \`<strong>Loaded:</strong> \${file.name} (\${(file.size / 1024).toFixed(1)} KB)\`;
-        urlInput.value = ''; // clear URL input
+        urlInput.value = '';
       };
       reader.readAsDataURL(file);
     }
 
-    // Quality slider
     const qualityRange = document.getElementById('qualityRange');
     const qualityVal = document.getElementById('qualityVal');
     qualityRange.addEventListener('input', (e) => qualityVal.textContent = e.target.value);
 
-    // Tabs
     document.querySelectorAll('.tab').forEach(tab => {
       tab.addEventListener('click', () => {
         document.querySelectorAll('.tab').forEach(t => t.classList.remove('active'));
@@ -542,13 +539,12 @@ export const PLAYGROUND_HTML = `<!DOCTYPE html>
       });
     });
 
-    // Run processing
     document.getElementById('runBtn').addEventListener('click', async () => {
       const runBtn = document.getElementById('runBtn');
       const jsonOutput = document.getElementById('jsonOutput');
       const previewBox = document.getElementById('previewBox');
       const statSize = document.getElementById('statSize');
-      const statDim = document.getElementById('statDim');
+      const statType = document.getElementById('statType');
       const statSpeed = document.getElementById('statSpeed');
 
       runBtn.disabled = true;
@@ -556,7 +552,6 @@ export const PLAYGROUND_HTML = `<!DOCTYPE html>
 
       const startTime = performance.now();
 
-      // Build payload
       let payload = {};
       if (loadedBase64 && !urlInput.value) {
         payload.image = loadedBase64;
@@ -582,36 +577,33 @@ export const PLAYGROUND_HTML = `<!DOCTYPE html>
           body: JSON.stringify(payload)
         });
 
-        const data = await res.json();
         const endTime = performance.now();
         const responseTime = Math.round(endTime - startTime);
-
-        jsonOutput.textContent = JSON.stringify(data, null, 2);
         statSpeed.textContent = \`\${responseTime} ms\`;
 
-        if (data.success) {
+        const contentType = res.headers.get('content-type') || '';
+        statType.textContent = contentType.split(';')[0];
+
+        if (activeService === 'inspect' || contentType.includes('application/json')) {
+          const data = await res.json();
+          jsonOutput.textContent = JSON.stringify(data, null, 2);
+          if (data.sizeBytes) statSize.textContent = formatBytes(data.sizeBytes);
           if (data.image) {
             previewBox.innerHTML = \`<img src="\${data.image}" alt="Processed Image">\`;
           }
-
-          if (data.compressedSize || data.convertedSize || data.resizedSize || data.cleanedSize || data.sizeBytes) {
-            const bytes = data.compressedSize || data.convertedSize || data.resizedSize || data.cleanedSize || data.sizeBytes;
-            statSize.textContent = formatBytes(bytes);
-          }
-
-          if (data.newDimensions) {
-            statDim.textContent = \`\${data.newDimensions.width}x\${data.newDimensions.height}\`;
-          } else if (data.width && data.height) {
-            statDim.textContent = \`\${data.width}x\${data.height}\`;
-          }
         } else {
-          previewBox.innerHTML = \`<span class="placeholder-text" style="color: #ef4444;">Error: \${data.error}</span>\`;
+          // Raw Image File delivered directly!
+          const blob = await res.blob();
+          const imageUrl = URL.createObjectURL(blob);
+          previewBox.innerHTML = \`<img src="\${imageUrl}" alt="Delivered Image File">\`;
+          statSize.textContent = formatBytes(blob.size);
+          jsonOutput.textContent = \`✅ RAW IMAGE FILE DELIVERED DIRECTLY TO BUYER!\n\nHTTP Status: \${res.status} OK\nContent-Type: \${contentType}\nContent-Length: \${blob.size} bytes\nFilename: \${res.headers.get('content-disposition') || 'pixelflow-output'}\`;
         }
       } catch (err) {
         jsonOutput.textContent = \`Network error: \${err.message}\`;
       } finally {
         runBtn.disabled = false;
-        runBtn.textContent = 'Run Processing 🚀';
+        runBtn.textContent = 'Run Processing & Deliver Image 🚀';
       }
     });
 
