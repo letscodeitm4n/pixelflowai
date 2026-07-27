@@ -1,7 +1,7 @@
 import sharp from 'sharp';
 import { Request, Response } from 'express';
 import { fetchImageBuffer } from '../utils/fetch-image.js';
-import { sendSuccess, sendError, bufferToBase64 } from '../utils/response.js';
+import { sendError, sendImageResult } from '../utils/response.js';
 
 export async function stripExifHandler(req: Request, res: Response): Promise<void> {
   try {
@@ -25,12 +25,10 @@ export async function stripExifHandler(req: Request, res: Response): Promise<voi
 
     const outputFormat = metadata.format || 'png';
 
-    sendSuccess(res, {
+    sendImageResult(req, res, outputBuffer, outputFormat, {
       metadataRemoved: metadataFields.length > 0 ? metadataFields : ['None detected'],
       originalSize: inputBuffer.length,
       cleanedSize: outputBuffer.length,
-      format: outputFormat,
-      image: bufferToBase64(outputBuffer, outputFormat),
     });
   } catch (error) {
     sendError(res, error);
