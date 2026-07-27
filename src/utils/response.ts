@@ -1,4 +1,4 @@
-import { Response } from 'express';
+import { Request, Response } from 'express';
 import { ApiError } from './fetch-image.js';
 
 export function sendSuccess(res: Response, data: Record<string, any>): void {
@@ -24,6 +24,40 @@ export function sendError(res: Response, error: unknown): void {
       timestamp: new Date().toISOString(),
     });
   }
+}
+
+export function sendImageResult(
+  req: Request,
+  res: Response,
+  outputBuffer: Buffer,
+  format: string,
+  stats: Record<string, any>
+): void {
+  // Check if caller wants raw binary image file (e.g. ?raw=true or Accept: image/*)
+  const wantsRaw = req.query.raw === 'true' || req.query.format === 'binary';
+
+  if (wantsRaw) {
+    const mimeMap: Record<string, string> = {
+      webp: 'image/webp',
+      avif: 'image/avif',
+      png: 'image/png',
+      jpg: 'image/jpeg',
+      jpeg: 'image/jpeg',
+      gif: 'image/gif',
+    };
+    const contentType = mimeMap[format] || `image/${format}`;
+    res.setHeader('Content-Type', contentType);
+    res.setHeader('Content-Length', outputBuffer.length);
+    res.send(outputBuffer);
+    return;
+  }
+
+  // Default: Return structured JSON for AI Agents
+  sendSuccess(res, {
+    ...stats,
+    format,
+    image: bufferToBase64(outputBuffer, format),
+  });
 }
 
 export function bufferToBase64(buffer: Buffer, format: string): string {
