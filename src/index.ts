@@ -45,7 +45,7 @@ setInterval(() => {
 
 const PAY_TO = process.env.PAY_TO_ADDRESS || '0xae003877641ed159f45296904014ac1616d50f76';
 
-// ─── Official OKX x402 v2 Payment Middleware ───────────────────────────────
+// ─── OKX x402 v2 Payment Middleware (PAYMENT-REQUIRED header) ───────────────
 function enforceX402Payment(price: string, description: string, endpoint: string) {
   return (req: express.Request, res: express.Response, next: express.NextFunction): void => {
     // Empty probes without image parameter return 200 OK Usage API JSON for discovery
@@ -54,12 +54,12 @@ function enforceX402Payment(price: string, description: string, endpoint: string
     }
 
     // Check for x402 Payment Authorization / Proof header
-    const authHeader = req.headers['x-402-authorization'] || req.headers['authorization'] || req.headers['x-payment-proof'];
+    const paymentSig = req.headers['payment-signature'] || req.headers['x-payment'] || req.headers['authorization'];
 
-    if (!authHeader) {
-      const responsePayload = {
+    if (!paymentSig) {
+      // Build x402 v2 payload per OKX Agent Payments Protocol spec
+      const challengePayload = {
         x402Version: 2,
-        error: 'Payment required',
         resource: {
           url: `https://pixelflowai-production.up.railway.app${endpoint}`,
           description,
@@ -76,9 +76,14 @@ function enforceX402Payment(price: string, description: string, endpoint: string
         ],
       };
 
-      const b64Challenge = Buffer.from(JSON.stringify(responsePayload)).toString('base64');
-      res.setHeader('WWW-Authenticate', `x402 ${b64Challenge}`);
-      res.status(402).json(responsePayload);
+      // Encode as base64 for PAYMENT-REQUIRED header (x402 v2 standard)
+      const b64Payload = Buffer.from(JSON.stringify(challengePayload)).toString('base64');
+
+      // Set PAYMENT-REQUIRED header (v2 format that onchainos CLI expects)
+      res.setHeader('PAYMENT-REQUIRED', b64Payload);
+
+      // Return 402 with the challenge in the body as well (v1 fallback)
+      res.status(402).json(challengePayload);
       return;
     }
 
@@ -115,7 +120,7 @@ function registerRoutes(): void {
     res.json({
       status: 'healthy',
       service: 'PixelFlow',
-      version: '1.4.4',
+      version: '1.5.0',
       network: CONFIG.network,
       asset: 'USDT0 (0x779ded0c9e1022225f8e0630b35a9b54be713736)',
       payTo: PAY_TO,
@@ -135,7 +140,7 @@ function registerRoutes(): void {
     res.json({
       name: 'PixelFlow',
       tagline: 'High-speed image optimization, format conversion, and resizing API for AI agents.',
-      version: '1.4.4',
+      version: '1.5.0',
       network: CONFIG.network,
       asset: 'USDT0 (0x779ded0c9e1022225f8e0630b35a9b54be713736)',
       payTo: PAY_TO,
@@ -162,7 +167,7 @@ function registerRoutes(): void {
   });
 
   app.listen(CONFIG.port, '0.0.0.0', () => {
-    console.log(`\n🚀 PixelFlow v1.4.4 running on 0.0.0.0:${CONFIG.port}`);
+    console.log(`\n🚀 PixelFlow v1.5.0 running on 0.0.0.0:${CONFIG.port}`);
   });
 }
 
