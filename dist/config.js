@@ -10,7 +10,7 @@ export const SERVICES = {
     compress: {
         name: 'Ultra-Compressor',
         description: 'Compress images by 70-90% via WebP/AVIF conversion. Reduces file sizes while preserving visual quality.',
-        price: '0.01',
+        price: '0.001',
         mimeType: 'application/json',
         endpoint: '/v1/compress',
         method: 'POST',
@@ -18,7 +18,7 @@ export const SERVICES = {
     convert: {
         name: 'Format Converter',
         description: 'Convert images between PNG, JPG, WebP, and AVIF formats.',
-        price: '0.01',
+        price: '0.001',
         mimeType: 'application/json',
         endpoint: '/v1/convert',
         method: 'POST',
@@ -26,7 +26,7 @@ export const SERVICES = {
     resize: {
         name: 'Image Resizer',
         description: 'Resize images to custom width and height with cover, contain, fill, inside, and outside fit modes.',
-        price: '0.01',
+        price: '0.001',
         mimeType: 'application/json',
         endpoint: '/v1/resize',
         method: 'POST',

@@ -71,7 +71,7 @@ function enforceX402Payment(price: string, description: string, endpoint: string
             network: CONFIG.network,
             asset: CONFIG.asset,
             payTo: PAY_TO,
-            amount: '10000', // 0.01 USDT in atomic units (6 decimals)
+            amount: '1000', // 0.001 USDT in atomic units (6 decimals)
             maxTimeoutSeconds: 600,
           },
         ],
@@ -121,7 +121,7 @@ function registerRoutes(): void {
     res.json({
       status: 'healthy',
       service: 'PixelFlow',
-      version: '1.5.2',
+      version: '1.6.0',
       network: CONFIG.network,
       asset: 'USDT0 (0x779ded0c9e1022225f8e0630b35a9b54be713736)',
       payTo: PAY_TO,
@@ -141,7 +141,7 @@ function registerRoutes(): void {
     res.json({
       name: 'PixelFlow',
       tagline: 'High-speed image optimization, format conversion, and resizing API for AI agents.',
-      version: '1.5.2',
+      version: '1.6.0',
       network: CONFIG.network,
       asset: 'USDT0 (0x779ded0c9e1022225f8e0630b35a9b54be713736)',
       payTo: PAY_TO,
