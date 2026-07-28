@@ -58,6 +58,8 @@ export async function resizeHandler(req: Request, res: Response): Promise<void> 
     const outputFormat = outputMetadata.format || 'png';
 
     sendImageResult(req, res, outputBuffer, outputFormat, {
+      width: outputMetadata.width,
+      height: outputMetadata.height,
       originalDimensions: { width: metadata.width, height: metadata.height },
       newDimensions: { width: outputMetadata.width, height: outputMetadata.height },
       fit,

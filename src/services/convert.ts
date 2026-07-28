@@ -5,7 +5,8 @@ import { sendError, sendImageResult } from '../utils/response.js';
 
 export async function convertHandler(req: Request, res: Response): Promise<void> {
   try {
-    const { image, outputFormat = 'png' } = req.body || {};
+    const { image, outputFormat, format } = req.body || {};
+    const targetFormat = outputFormat || format || 'png';
 
     // Return clear Usage API Documentation when no image parameter is provided
     if (!image || typeof image !== 'string' || image.trim() === '') {
@@ -29,11 +30,11 @@ export async function convertHandler(req: Request, res: Response): Promise<void>
     }
 
     const validFormats = ['png', 'jpg', 'webp', 'avif'];
-    let normFormat = outputFormat.toLowerCase();
+    let normFormat = targetFormat.toLowerCase();
     if (normFormat === 'jpeg') normFormat = 'jpg';
 
     if (!validFormats.includes(normFormat)) {
-      throw new ApiError(400, `Invalid outputFormat: ${outputFormat}. Supported: ${validFormats.join(', ')}`);
+      throw new ApiError(400, `Invalid format: ${targetFormat}. Supported: ${validFormats.join(', ')}`);
     }
 
     const { buffer: inputBuffer, detectedFormat } = await fetchImageBuffer({ image });
