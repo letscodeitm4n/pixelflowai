@@ -153,14 +153,6 @@ curl -X POST "https://pixelflowai-production.up.railway.app/v1/compress?format=j
 
 ---
 
-## 🌐 Playgrounds
-
-- 📺 **Demo Video Playground**: [https://pixelflowai-production.up.railway.app/test1](https://pixelflowai-production.up.railway.app/test1) (Unprotected for recording demo videos)
-- 🧪 **Interactive Web Playground**: [https://pixelflowai-production.up.railway.app/test](https://pixelflowai-production.up.railway.app/test) (Full UI test environment)
-- ❤️ **Health Check**: [https://pixelflowai-production.up.railway.app/health](https://pixelflowai-production.up.railway.app/health)
-
----
-
 ## 📄 License
 
 [MIT License](LICENSE) © 2026 PixelFlow AI
