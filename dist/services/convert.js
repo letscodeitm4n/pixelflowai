@@ -14,7 +14,7 @@ export async function convertHandler(req, res) {
                 success: true,
                 service: 'PixelFlow Format Converter',
                 status: 'online',
-                price: '0.01 USDT/use',
+                price: '0.001 USDT/use',
                 endpoint: 'POST /v1/convert',
                 description: 'Convert images between PNG, JPG, WebP, and AVIF formats.',
                 parameters: {

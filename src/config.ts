@@ -10,7 +10,7 @@ export const CONFIG = {
 export interface ServiceDefinition {
   name: string;
   description: string;
-  price: string; // Plain decimal string, e.g. '0.01'
+  price: string; // Plain decimal string, e.g. '0.001'
   mimeType: string;
   endpoint: string;
   method: string;

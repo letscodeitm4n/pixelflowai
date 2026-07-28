@@ -338,7 +338,7 @@ export const PLAYGROUND_HTML = `<!DOCTYPE html>
       <div>
         <div class="logo-text">PixelFlow AI</div>
       </div>
-      <span class="badge">x402 Protocol Active ($0.01 USDT)</span>
+      <span class="badge">x402 Protocol Active ($0.001 USDT)</span>
     </div>
     <div class="status-pill">
       <span class="dot"></span> Server Live

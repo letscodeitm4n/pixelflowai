@@ -77,7 +77,7 @@ function enforceX402Payment(price, description, endpoint) {
 }
 // ─── Routes ──────────────────────────────────────────────────────
 function registerRoutes() {
-    // Official Production Paid Endpoints (0.01 USDT x402 Enforced)
+    // Official Production Paid Endpoints (0.001 USDT x402 Enforced)
     app.post('/v1/compress', enforceX402Payment(SERVICES.compress.price, SERVICES.compress.description, SERVICES.compress.endpoint), compressHandler);
     app.post('/v1/convert', enforceX402Payment(SERVICES.convert.price, SERVICES.convert.description, SERVICES.convert.endpoint), convertHandler);
     app.post('/v1/resize', enforceX402Payment(SERVICES.resize.price, SERVICES.resize.description, SERVICES.resize.endpoint), resizeHandler);

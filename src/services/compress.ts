@@ -17,7 +17,7 @@ export async function compressHandler(req: Request, res: Response): Promise<void
         success: true,
         service: 'PixelFlow Ultra-Compressor',
         status: 'online',
-        price: '0.01 USDT/use',
+        price: '0.001 USDT/use',
         endpoint: 'POST /v1/compress',
         description: 'Compress images by 70-90% via WebP/AVIF conversion.',
         parameters: {

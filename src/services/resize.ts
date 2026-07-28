@@ -18,7 +18,7 @@ export async function resizeHandler(req: Request, res: Response): Promise<void> 
         success: true,
         service: 'PixelFlow Image Resizer',
         status: 'online',
-        price: '0.01 USDT/use',
+        price: '0.001 USDT/use',
         endpoint: 'POST /v1/resize',
         description: 'Resize images to custom width and height with cover, contain, fill, inside, and outside fit modes.',
         parameters: {
