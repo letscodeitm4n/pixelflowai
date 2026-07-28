@@ -17,10 +17,12 @@ export function sendError(res: Response, error: unknown): void {
       timestamp: new Date().toISOString(),
     });
   } else {
+    const errMsg = error instanceof Error ? error.message : String(error);
     console.error('Unexpected error:', error);
     res.status(500).json({
       success: false,
       error: 'Internal server error',
+      detail: errMsg,
       timestamp: new Date().toISOString(),
     });
   }
