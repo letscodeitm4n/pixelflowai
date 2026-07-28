@@ -3,8 +3,11 @@ import { fetchImageBuffer, ApiError } from '../utils/fetch-image.js';
 import { sendError, sendImageResult } from '../utils/response.js';
 export async function convertHandler(req, res) {
     try {
-        const { image, outputFormat, format } = req.body || {};
-        const targetFormat = outputFormat || format || 'png';
+        const body = req.body || {};
+        const query = req.query || {};
+        const image = body.image || query.image || body.params?.image;
+        const outputFormat = body.outputFormat || body.format || query.outputFormat || query.format;
+        const targetFormat = outputFormat || 'png';
         // Return clear Usage API Documentation when no image parameter is provided
         if (!image || typeof image !== 'string' || image.trim() === '') {
             res.status(200).json({

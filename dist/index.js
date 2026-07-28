@@ -100,7 +100,7 @@ function registerRoutes() {
         res.json({
             status: 'healthy',
             service: 'PixelFlow',
-            version: '1.5.1',
+            version: '1.5.2',
             network: CONFIG.network,
             asset: 'USDT0 (0x779ded0c9e1022225f8e0630b35a9b54be713736)',
             payTo: PAY_TO,
@@ -119,7 +119,7 @@ function registerRoutes() {
         res.json({
             name: 'PixelFlow',
             tagline: 'High-speed image optimization, format conversion, and resizing API for AI agents.',
-            version: '1.5.1',
+            version: '1.5.2',
             network: CONFIG.network,
             asset: 'USDT0 (0x779ded0c9e1022225f8e0630b35a9b54be713736)',
             payTo: PAY_TO,

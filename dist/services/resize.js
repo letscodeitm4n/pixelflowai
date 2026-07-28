@@ -3,7 +3,12 @@ import { fetchImageBuffer, ApiError } from '../utils/fetch-image.js';
 import { sendError, sendImageResult } from '../utils/response.js';
 export async function resizeHandler(req, res) {
     try {
-        const { image, width, height, fit = 'cover' } = req.body || {};
+        const body = req.body || {};
+        const query = req.query || {};
+        const image = body.image || query.image || body.params?.image;
+        const width = body.width || query.width;
+        const height = body.height || query.height;
+        const fit = body.fit || query.fit || 'cover';
         // Return clear Usage API Documentation when no image parameter is provided
         if (!image || typeof image !== 'string' || image.trim() === '') {
             res.status(200).json({

@@ -5,7 +5,11 @@ import { sendError, sendImageResult } from '../utils/response.js';
 
 export async function compressHandler(req: Request, res: Response): Promise<void> {
   try {
-    const { image, quality = 75, format = 'auto' } = req.body || {};
+    const body = req.body || {};
+    const query = req.query || {};
+    const image = body.image || query.image || body.params?.image;
+    const quality = body.quality || query.quality || 75;
+    const format = body.format || query.format || 'auto';
 
     // Return clear Usage API Documentation when no image parameter is provided
     if (!image || typeof image !== 'string' || image.trim() === '') {
