@@ -83,6 +83,7 @@ function enforceX402Payment(price, description, endpoint) {
                 payTo: PAY_TO,
                 amount: '1000',
                 maxTimeoutSeconds: 600,
+                extra: {},
             };
             // Decode base64 PAYMENT-SIGNATURE header payload
             let payloadObj = paymentSig;
@@ -98,9 +99,9 @@ function enforceX402Payment(price, description, endpoint) {
             try {
                 const { OKXFacilitatorClient } = await import('@okxweb3/x402-core');
                 const client = new OKXFacilitatorClient({
-                    apiKey: process.env.OKX_API_KEY,
-                    secretKey: process.env.OKX_SECRET_KEY,
-                    passphrase: process.env.OKX_PASSPHRASE,
+                    apiKey: process.env.OKX_API_KEY || '',
+                    secretKey: process.env.OKX_SECRET_KEY || '',
+                    passphrase: process.env.OKX_PASSPHRASE || '',
                 });
                 // Step 1: Call OKX Facilitator /verify
                 const verifyData = await client.verify(payloadObj, paymentRequirements).catch((err) => {
@@ -113,11 +114,11 @@ function enforceX402Payment(price, description, endpoint) {
                     return null;
                 });
                 if (settleData) {
-                    settlementTxHash = settleData.txHash || settleData.transactionHash || null;
+                    settlementTxHash = settleData.txHash || settleData.transactionHash || settleData.transaction || null;
                     settlementId = settleData.settlementId || settleData.id || null;
                 }
                 else if (verifyData) {
-                    settlementTxHash = verifyData.txHash || verifyData.transactionHash || null;
+                    settlementTxHash = verifyData.txHash || verifyData.transactionHash || verifyData.transaction || null;
                     settlementId = verifyData.settlementId || verifyData.id || null;
                 }
             }
