@@ -93,27 +93,55 @@ function enforceX402Payment(price: string, description: string, endpoint: string
       let settlementTxHash: string | null = null;
       let settlementId: string | null = null;
 
-      // Call OKX Facilitator API if credentials are configured
-      if (process.env.OKX_API_KEY && process.env.OKX_SECRET_KEY) {
-        try {
-          const { OKXFacilitatorClient } = await import('@okxweb3/x402-core');
-          const client = new OKXFacilitatorClient({
-            apiKey: process.env.OKX_API_KEY!,
-            secretKey: process.env.OKX_SECRET_KEY!,
-            passphrase: process.env.OKX_PASSPHRASE || '',
-          });
-          const verifyResult = await (client as any).verifyPayment?.({
-            paymentHeader: paymentSig,
-            amount: '1000',
-            payTo: PAY_TO,
-          });
-          if (verifyResult) {
-            settlementTxHash = verifyResult.txHash || verifyResult.transactionHash || null;
-            settlementId = verifyResult.settlementId || verifyResult.id || null;
-          }
-        } catch (fErr) {
-          console.warn('OKX Facilitator verification note:', (fErr as Error).message);
+      const paymentRequirements = {
+        scheme: 'exact',
+        network: CONFIG.network,
+        asset: CONFIG.asset,
+        payTo: PAY_TO,
+        amount: '1000',
+        maxTimeoutSeconds: 600,
+      };
+
+      // Decode base64 PAYMENT-SIGNATURE header payload
+      let payloadObj: any = paymentSig;
+      try {
+        if (typeof paymentSig === 'string') {
+          const jsonStr = Buffer.from(paymentSig, 'base64').toString('utf-8');
+          payloadObj = JSON.parse(jsonStr);
         }
+      } catch {
+        payloadObj = paymentSig;
+      }
+
+      try {
+        const { OKXFacilitatorClient } = await import('@okxweb3/x402-core');
+        const client = new OKXFacilitatorClient({
+          apiKey: process.env.OKX_API_KEY,
+          secretKey: process.env.OKX_SECRET_KEY,
+          passphrase: process.env.OKX_PASSPHRASE,
+        });
+
+        // Step 1: Call OKX Facilitator /verify
+        const verifyData = await client.verify(payloadObj, paymentRequirements).catch((err) => {
+          console.warn('OKX Facilitator verify notice:', err.message);
+          return null;
+        });
+
+        // Step 2: Call OKX Facilitator /settle
+        const settleData = await client.settle(payloadObj, paymentRequirements).catch((err) => {
+          console.warn('OKX Facilitator settle notice:', err.message);
+          return null;
+        });
+
+        if (settleData) {
+          settlementTxHash = settleData.txHash || settleData.transactionHash || null;
+          settlementId = settleData.settlementId || settleData.id || null;
+        } else if (verifyData) {
+          settlementTxHash = verifyData.txHash || verifyData.transactionHash || null;
+          settlementId = verifyData.settlementId || verifyData.id || null;
+        }
+      } catch (fErr) {
+        console.warn('OKX Facilitator client error:', (fErr as Error).message);
       }
 
       // Build base64 PAYMENT-RESPONSE receipt header per OKX x402 spec
