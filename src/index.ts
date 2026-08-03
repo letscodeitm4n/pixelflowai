@@ -114,6 +114,9 @@ function enforceX402Payment(price: string, description: string, endpoint: string
         payloadObj = paymentSig;
       }
 
+      let verifyData: any = null;
+      let settleData: any = null;
+
       try {
         const { OKXFacilitatorClient } = await import('@okxweb3/x402-core');
         const client = new OKXFacilitatorClient({
@@ -123,16 +126,18 @@ function enforceX402Payment(price: string, description: string, endpoint: string
         });
 
         // Step 1: Call OKX Facilitator /verify
-        const verifyData: any = await client.verify(payloadObj, paymentRequirements).catch((err) => {
-          console.warn('OKX Facilitator verify notice:', err.message);
+        verifyData = await client.verify(payloadObj, paymentRequirements).catch((err) => {
+          console.warn('[OKX Facilitator /verify Error]:', err.message);
           return null;
         });
+        console.log('[OKX Facilitator /verify Output]:', JSON.stringify(verifyData));
 
         // Step 2: Call OKX Facilitator /settle
-        const settleData: any = await client.settle(payloadObj, paymentRequirements).catch((err) => {
-          console.warn('OKX Facilitator settle notice:', err.message);
+        settleData = await client.settle(payloadObj, paymentRequirements).catch((err) => {
+          console.warn('[OKX Facilitator /settle Error]:', err.message);
           return null;
         });
+        console.log('[OKX Facilitator /settle Output]:', JSON.stringify(settleData));
 
         if (settleData) {
           settlementTxHash = settleData.txHash || settleData.transactionHash || settleData.transaction || null;
@@ -142,7 +147,20 @@ function enforceX402Payment(price: string, description: string, endpoint: string
           settlementId = verifyData.settlementId || verifyData.id || null;
         }
       } catch (fErr) {
-        console.warn('OKX Facilitator client error:', (fErr as Error).message);
+        console.error('[OKX Facilitator Client Exception]:', (fErr as Error).message);
+      }
+
+      // STRICT RULE: Reject delivery if no settled txHash returned from Facilitator
+      if (!settlementTxHash) {
+        console.warn('Facilitator settlement returned no txHash. Rejecting delivery with 402.');
+        res.status(402).json({
+          success: false,
+          error: 'Payment verification failed: No settled transaction hash returned from OKX Facilitator.',
+          verifyResponse: verifyData,
+          settleResponse: settleData,
+          timestamp: new Date().toISOString(),
+        });
+        return;
       }
 
       // Build base64 PAYMENT-RESPONSE receipt header per OKX x402 spec
@@ -162,7 +180,13 @@ function enforceX402Payment(price: string, description: string, endpoint: string
       res.setHeader('PAYMENT-RESPONSE', b64Receipt);
       res.setHeader('X-PAYMENT-SETTLED', 'true');
     } catch (pErr) {
-      console.warn('Payment signature processing note:', (pErr as Error).message);
+      console.error('[Payment Processing Failure]:', (pErr as Error).message);
+      res.status(402).json({
+        success: false,
+        error: `Payment verification failed: ${(pErr as Error).message}`,
+        timestamp: new Date().toISOString(),
+      });
+      return;
     }
 
     next();
