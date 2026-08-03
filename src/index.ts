@@ -132,7 +132,19 @@ function enforceX402Payment(price: string, description: string, endpoint: string
         });
         console.log('[OKX Facilitator /verify Output]:', JSON.stringify(verifyData));
 
-        // Step 2: Call OKX Facilitator /settle
+        // RULE 6: Do not call /settle after /verify returns 401/error; fail immediately
+        if (!verifyData || verifyData.code === 401 || (typeof verifyData === 'string' && verifyData.includes('401'))) {
+          console.warn('Facilitator /verify failed or returned 401. Aborting /settle.');
+          res.status(402).json({
+            success: false,
+            error: 'Payment verification failed: OKX Facilitator API authentication error (401 Unauthorized). Please configure OKX_API_KEY credentials.',
+            verifyResponse: verifyData,
+            timestamp: new Date().toISOString(),
+          });
+          return;
+        }
+
+        // Step 2: Call OKX Facilitator /settle ONLY IF /verify succeeds
         settleData = await client.settle(payloadObj, paymentRequirements).catch((err) => {
           console.warn('[OKX Facilitator /settle Error]:', err.message);
           return null;
